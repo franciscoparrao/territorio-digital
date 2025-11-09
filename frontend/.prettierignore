@@ -1,0 +1,19 @@
+# Package directories
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Build outputs
+.svelte-kit/
+build/
+dist/
+.vercel/
+.netlify/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
