@@ -2,7 +2,7 @@
 name = "territorio-digital-api"
 version = "0.1.0"
 edition = "2021"
-authors = ["Francisco Parrão"]
+authors = ["Francisco Parra"]
 
 [dependencies]
 # Web framework

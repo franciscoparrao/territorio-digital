@@ -41,10 +41,10 @@
 </script>
 
 <svelte:head>
-	<title>Sobre mí - Territorio Digital</title>
+	<title>Sobre Nosotros - Territorio Digital</title>
 	<meta
 		name="description"
-		content="Francisco Parrão - Especialista en desarrollo web, data science y análisis satelital. Transformo datos en decisiones inteligentes."
+		content="Equipo de especialistas en desarrollo web, data science y análisis satelital. Transformamos datos en decisiones inteligentes."
 	/>
 </svelte:head>
 
@@ -55,17 +55,17 @@
 			<!-- Content -->
 			<div>
 				<h1 class="text-4xl font-bold tracking-tight text-secondary-900 sm:text-5xl">
-					Hola, soy <span class="text-primary-600">Francisco Parrão</span>
+					Somos <span class="text-primary-600">Territorio Digital</span>
 				</h1>
 				<p class="mt-6 text-lg text-secondary-600">
-					Ingeniero de software especializado en desarrollo web moderno, ciencia de datos y análisis
-					geoespacial. Ayudo a empresas y organizaciones a transformar sus datos en decisiones
-					estratégicas mediante tecnología de vanguardia.
+					Un equipo de profesionales especializados en desarrollo web moderno, ciencia de datos y
+					análisis geoespacial. Ayudamos a empresas y organizaciones a transformar sus datos en
+					decisiones estratégicas mediante tecnología de vanguardia.
 				</p>
 				<p class="mt-4 text-lg text-secondary-600">
 					Con experiencia en proyectos que van desde aplicaciones web escalables hasta análisis
-					satelital para monitoreo ambiental, combino habilidades técnicas profundas con enfoque en
-					resultados de negocio.
+					satelital para monitoreo ambiental, combinamos habilidades técnicas profundas con enfoque
+					en resultados de negocio concretos.
 				</p>
 				<div class="mt-8 flex gap-4">
 					<Button variant="primary" href="/contacto">Trabajemos juntos</Button>
@@ -102,7 +102,7 @@
 	<div class="mx-auto max-w-5xl">
 		<h2 class="text-center text-3xl font-bold text-secondary-900">Habilidades Técnicas</h2>
 		<p class="mt-4 text-center text-lg text-secondary-600">
-			Tecnologías y herramientas con las que trabajo regularmente
+			Tecnologías y herramientas con las que trabajamos regularmente
 		</p>
 
 		<div class="mt-12 grid gap-8 md:grid-cols-2">
@@ -156,26 +156,27 @@
 <!-- Background -->
 <Section background="white" padding="lg">
 	<div class="mx-auto max-w-4xl">
-		<h2 class="text-3xl font-bold text-secondary-900">Trayectoria</h2>
+		<h2 class="text-3xl font-bold text-secondary-900">Nuestra Trayectoria</h2>
 		<div class="mt-8 space-y-6 text-secondary-600">
 			<p>
-				Mi camino en tecnología comenzó con la curiosidad por entender cómo funcionan las cosas y
-				cómo la programación puede resolver problemas reales. Esta curiosidad me llevó a
-				especializarme en áreas donde los datos y el desarrollo de software se encuentran.
+				Nuestro camino en tecnología comenzó con la curiosidad por entender cómo funcionan las cosas
+				y cómo la programación puede resolver problemas reales. Esta curiosidad nos llevó a
+				especializarnos en áreas donde los datos y el desarrollo de software se encuentran.
 			</p>
 			<p>
-				He trabajado en proyectos que van desde aplicaciones web para startups hasta sistemas de
-				análisis de imágenes satelitales para monitoreo ambiental. Cada proyecto me ha enseñado algo
-				nuevo y me ha permitido desarrollar un enfoque integral para resolver problemas complejos.
+				Hemos trabajado en proyectos que van desde aplicaciones web para startups hasta sistemas de
+				análisis de imágenes satelitales para monitoreo ambiental. Cada proyecto nos ha enseñado
+				algo nuevo y nos ha permitido desarrollar un enfoque integral para resolver problemas
+				complejos.
 			</p>
 			<p>
-				Hoy, combino experiencia en desarrollo web full-stack, ciencia de datos y análisis
-				geoespacial para ofrecer soluciones completas que generan valor real para mis clientes.
+				Hoy, combinamos experiencia en desarrollo web full-stack, ciencia de datos y análisis
+				geoespacial para ofrecer soluciones completas que generan valor real para nuestros clientes.
 			</p>
 		</div>
 
 		<div class="mt-12">
-			<h3 class="text-2xl font-semibold text-secondary-900">¿Por qué trabajar conmigo?</h3>
+			<h3 class="text-2xl font-semibold text-secondary-900">¿Por qué trabajar con nosotros?</h3>
 			<ul class="mt-6 space-y-3 text-secondary-600">
 				<li class="flex items-start">
 					<svg
@@ -190,7 +191,7 @@
 						/>
 					</svg>
 					<span class="ml-3"
-						><strong>Versatilidad técnica:</strong> Puedo abordar proyectos end-to-end, desde el frontend
+						><strong>Versatilidad técnica:</strong> Podemos abordar proyectos end-to-end, desde el frontend
 						hasta análisis de datos complejos.</span
 					>
 				</li>
@@ -224,7 +225,7 @@
 						/>
 					</svg>
 					<span class="ml-3"
-						><strong>Comunicación efectiva:</strong> Mantengo informados a los clientes en cada etapa
+						><strong>Comunicación efectiva:</strong> Mantenemos informados a los clientes en cada etapa
 						del proyecto.</span
 					>
 				</li>
@@ -241,11 +242,20 @@
 						/>
 					</svg>
 					<span class="ml-3"
-						><strong>Orientación a resultados:</strong> Me enfoco en entregar soluciones que resuelven
+						><strong>Orientación a resultados:</strong> Nos enfocamos en entregar soluciones que resuelven
 						problemas reales de negocio.</span
 					>
 				</li>
 			</ul>
+		</div>
+
+		<div class="mt-12 rounded-lg border border-primary-200 bg-primary-50 p-6">
+			<h3 class="text-lg font-semibold text-secondary-900">Liderado por Francisco Parra</h3>
+			<p class="mt-2 text-secondary-600">
+				Nuestro equipo está liderado por Francisco Parra, ingeniero de software con más de 5 años de
+				experiencia en proyectos de desarrollo web, data science y análisis satelital, trabajando
+				con empresas y organizaciones en soluciones tecnológicas innovadoras.
+			</p>
 		</div>
 	</div>
 </Section>
@@ -255,7 +265,7 @@
 	<div class="mx-auto max-w-3xl text-center">
 		<h2 class="text-3xl font-bold text-secondary-900 sm:text-4xl">¿Tienes un proyecto en mente?</h2>
 		<p class="mt-4 text-lg text-secondary-700">
-			Me encantaría conocer tus ideas y ayudarte a hacerlas realidad.
+			Nos encantaría conocer tus ideas y ayudarte a hacerlas realidad.
 		</p>
 		<div class="mt-8">
 			<Button variant="primary" size="lg" href="/contacto">Hablemos de tu proyecto</Button>

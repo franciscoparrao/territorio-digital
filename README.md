@@ -143,7 +143,7 @@ Propietario - Territorio Digital © 2025
 
 ## 👤 Autor
 
-**Francisco Parrão**
+**Francisco Parra**
 - LinkedIn: [Tu LinkedIn]
 - Email: contacto@territoriodigital.cl
 
