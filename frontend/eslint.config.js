@@ -25,6 +25,11 @@ export default [
 			parserOptions: {
 				parser: ts.parser
 			}
+		},
+		rules: {
+			// SvelteKit uses standard <a> elements, not resolve()
+			// This rule is for svelte-routing library, not SvelteKit
+			'svelte/no-navigation-without-resolve': 'off'
 		}
 	},
 	{
