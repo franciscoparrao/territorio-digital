@@ -3,20 +3,99 @@
 
 	const skills = [
 		{
-			category: 'Desarrollo Web',
-			items: ['SvelteKit', 'React', 'TypeScript', 'TailwindCSS', 'Node.js', 'Rust']
+			category: 'Desarrollo Web & Programación',
+			items: [
+				'Python',
+				'R',
+				'JavaScript',
+				'TypeScript',
+				'Rust',
+				'Go',
+				'Julia',
+				'C',
+				'C++',
+				'Java',
+				'SvelteKit',
+				'React',
+				'Vue.js',
+				'Next.js',
+				'Node.js',
+				'Nest.js',
+				'TailwindCSS'
+			]
 		},
 		{
-			category: 'Data Science & ML',
-			items: ['Python', 'scikit-learn', 'TensorFlow', 'PyTorch', 'Pandas', 'NumPy']
+			category: 'Data Science & Machine Learning',
+			items: [
+				'PyTorch',
+				'TensorFlow',
+				'scikit-learn',
+				'XGBoost',
+				'CatBoost',
+				'Pandas',
+				'NumPy',
+				'Matplotlib',
+				'Xarray',
+				'MLR3',
+				'Tidyverse',
+				'Shiny',
+				'Rhino'
+			]
 		},
 		{
-			category: 'Análisis Geoespacial',
-			items: ['GDAL', 'Rasterio', 'GeoPandas', 'QGIS', 'Earth Engine', 'Sentinel']
+			category: 'Análisis Geoespacial & GIS',
+			items: [
+				'QGIS',
+				'ArcGIS',
+				'Grass GIS',
+				'Saga GIS',
+				'Envi',
+				'Global Mapper',
+				'GDAL',
+				'Rasterio',
+				'GeoPandas',
+				'PostGIS',
+				'Terra',
+				'Sf',
+				'Earth Engine',
+				'Sentinel',
+				'Landsat',
+				'ASTER'
+			]
 		},
 		{
-			category: 'Ingeniería de Datos',
-			items: ['Airflow', 'dbt', 'PostgreSQL', 'MongoDB', 'Kafka', 'Docker']
+			category: 'Bases de Datos & DevOps',
+			items: [
+				'PostgreSQL',
+				'MongoDB',
+				'PostGIS',
+				'SQL',
+				'DuckDB',
+				'Airflow',
+				'dbt',
+				'Kafka',
+				'Spark',
+				'Docker',
+				'Kubernetes'
+			]
+		},
+		{
+			category: 'Modelamiento Geológico & Hidrológico',
+			items: ['Leapfrog', 'MODFLOW', 'Flopy', 'HEC-RAS', 'Procesos Gaussianos', 'Tgpy']
+		},
+		{
+			category: 'Deep Learning & IA Avanzada',
+			items: [
+				'Redes Convolucionales',
+				'GANs',
+				'Redes Neuronales Profundas',
+				'ChatGPT',
+				'Claude',
+				'Claude Code',
+				'Gemini',
+				'Fine-tuning',
+				'Prompt Engineering'
+			]
 		}
 	];
 
@@ -58,14 +137,16 @@
 					Somos <span class="text-primary-600">Territorio Digital</span>
 				</h1>
 				<p class="mt-6 text-lg text-secondary-600">
-					Un equipo de profesionales especializados en desarrollo web moderno, ciencia de datos y
-					análisis geoespacial. Ayudamos a empresas y organizaciones a transformar sus datos en
-					decisiones estratégicas mediante tecnología de vanguardia.
+					Un equipo multidisciplinario de especialistas en desarrollo web, ciencia de datos,
+					análisis geoespacial e inteligencia artificial. Transformamos datos en decisiones
+					estratégicas mediante soluciones tecnológicas avanzadas y metodologías científicas
+					rigurosas.
 				</p>
 				<p class="mt-4 text-lg text-secondary-600">
-					Con experiencia en proyectos que van desde aplicaciones web escalables hasta análisis
-					satelital para monitoreo ambiental, combinamos habilidades técnicas profundas con enfoque
-					en resultados de negocio concretos.
+					Con experiencia en proyectos que abarcan desde aplicaciones web full-stack hasta sistemas
+					de detección de desastres naturales basados en Machine Learning, análisis satelital para
+					monitoreo ambiental, y modelamiento geoespacial para evaluaciones de impacto ambiental.
+					Combinamos formación académica de posgrado con experiencia práctica en proyectos reales.
 				</p>
 				<div class="mt-8 flex gap-4">
 					<Button variant="primary" href="/contacto">Trabajemos juntos</Button>
@@ -79,16 +160,20 @@
 					<h3 class="text-xl font-semibold text-secondary-900">En números</h3>
 					<div class="mt-6 space-y-6">
 						<div>
-							<div class="text-3xl font-bold text-primary-600">5+</div>
-							<div class="text-sm text-secondary-600">Años de experiencia</div>
+							<div class="text-3xl font-bold text-primary-600">15+</div>
+							<div class="text-sm text-secondary-600">Años de experiencia combinada</div>
 						</div>
 						<div>
-							<div class="text-3xl font-bold text-primary-600">20+</div>
+							<div class="text-3xl font-bold text-primary-600">PhD</div>
+							<div class="text-sm text-secondary-600">Doctor en Informática</div>
+						</div>
+						<div>
+							<div class="text-3xl font-bold text-primary-600">30+</div>
 							<div class="text-sm text-secondary-600">Proyectos completados</div>
 						</div>
 						<div>
-							<div class="text-3xl font-bold text-primary-600">100%</div>
-							<div class="text-sm text-secondary-600">Clientes satisfechos</div>
+							<div class="text-3xl font-bold text-primary-600">10+</div>
+							<div class="text-sm text-secondary-600">Publicaciones científicas</div>
 						</div>
 					</div>
 				</Card>
@@ -159,19 +244,28 @@
 		<h2 class="text-3xl font-bold text-secondary-900">Nuestra Trayectoria</h2>
 		<div class="mt-8 space-y-6 text-secondary-600">
 			<p>
-				Nuestro camino en tecnología comenzó con la curiosidad por entender cómo funcionan las cosas
-				y cómo la programación puede resolver problemas reales. Esta curiosidad nos llevó a
-				especializarnos en áreas donde los datos y el desarrollo de software se encuentran.
+				Nuestro camino comenzó en la intersección entre las ciencias de la tierra y la informática,
+				con formación en Geología y un Minor en Física Cuántica de la Universidad de Chile. Esta
+				base multidisciplinaria nos permitió desarrollar una visión única para abordar problemas
+				complejos que requieren tanto comprensión científica como expertise técnico.
 			</p>
 			<p>
-				Hemos trabajado en proyectos que van desde aplicaciones web para startups hasta sistemas de
-				análisis de imágenes satelitales para monitoreo ambiental. Cada proyecto nos ha enseñado
-				algo nuevo y nos ha permitido desarrollar un enfoque integral para resolver problemas
-				complejos.
+				Con un Doctorado en Ciencias de la Ingeniería mención Informática y un Magíster en
+				Informática, ambos de la Universidad de Santiago, enfocados en sistemas de prevención y
+				detección de desastres naturales basados en inteligencia artificial, hemos consolidado
+				nuestra especialización en Data Science, Machine Learning y análisis geoespacial.
 			</p>
 			<p>
-				Hoy, combinamos experiencia en desarrollo web full-stack, ciencia de datos y análisis
-				geoespacial para ofrecer soluciones completas que generan valor real para nuestros clientes.
+				Hemos participado en más de 30 proyectos que abarcan desde evaluaciones de impacto ambiental
+				y modelamiento de inundaciones, hasta desarrollo de sistemas web escalables y análisis de
+				imágenes satelitales para concentración geoquímica. Nuestra experiencia incluye trabajo con
+				proyectos FONDAP-CONICYT, FONDEF, y consultorías para empresas en sectores inmobiliario,
+				minero e industrial.
+			</p>
+			<p>
+				Hoy, combinamos rigor académico con experiencia práctica, ofreciendo soluciones que integran
+				desarrollo web moderno, Machine Learning avanzado, análisis geoespacial y modelamiento
+				científico para generar valor real y medible en cada proyecto.
 			</p>
 		</div>
 
@@ -252,9 +346,19 @@
 		<div class="mt-12 rounded-lg border border-primary-200 bg-primary-50 p-6">
 			<h3 class="text-lg font-semibold text-secondary-900">Liderado por Francisco Parra</h3>
 			<p class="mt-2 text-secondary-600">
-				Nuestro equipo está liderado por Francisco Parra, ingeniero de software con más de 5 años de
-				experiencia en proyectos de desarrollo web, data science y análisis satelital, trabajando
-				con empresas y organizaciones en soluciones tecnológicas innovadoras.
+				Nuestro equipo está liderado por <strong>Francisco José Parra Ortiz</strong>, Doctor en
+				Ciencias de la Ingeniería mención Informática y Magíster en Informática (Universidad de
+				Santiago). Geólogo titulado con Minor en Física Cuántica (Universidad de Chile),
+				especializado en ciencia de datos, Machine Learning, análisis geoespacial y desarrollo de
+				software.
+			</p>
+			<p class="mt-2 text-secondary-600">
+				Con más de 15 años de experiencia combinada, Francisco ha liderado proyectos que van desde
+				sistemas de detección de desastres naturales usando Deep Learning, hasta evaluaciones de
+				impacto ambiental y desarrollo de aplicaciones web. Profesor de cátedra en la Universidad de
+				Santiago (Innovación y Emprendimiento, Geoinformática) y autor de publicaciones científicas
+				en journals internacionales. Ha participado en proyectos FONDAP-CONICYT, FONDEF IDeA, y
+				consultorías especializadas en modelamiento geológico, hidrogeológico y análisis satelital.
 			</p>
 		</div>
 	</div>
