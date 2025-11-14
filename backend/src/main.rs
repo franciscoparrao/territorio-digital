@@ -1,13 +1,23 @@
-use axum::{routing::get, Json, Router};
-use serde::Serialize;
+mod config;
+mod db;
+mod handlers;
+mod models;
+mod routes;
+mod services;
+
 use std::net::SocketAddr;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-#[derive(Serialize)]
-struct HealthResponse {
-    status: String,
-    version: String,
+use config::Config;
+use db::MongoDb;
+use services::EmailService;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db: MongoDb,
+    pub email_service: EmailService,
+    pub config: Config,
 }
 
 #[tokio::main]
@@ -21,27 +31,39 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    // Build our application with routes
-    let app = Router::new()
-        .route("/", get(root))
-        .route("/health", get(health))
-        .layer(CorsLayer::permissive());
+    // Load configuration
+    let config = Config::from_env().expect("Failed to load configuration");
+    tracing::info!("✅ Configuration loaded");
+
+    // Connect to MongoDB
+    let db = MongoDb::connect(&config)
+        .await
+        .expect("Failed to connect to MongoDB");
+
+    // Initialize email service
+    let email_service = EmailService::new(&config).expect("Failed to initialize email service");
+    tracing::info!("✅ Email service initialized");
+
+    // Create application state
+    let state = AppState {
+        db,
+        email_service,
+        config: config.clone(),
+    };
+
+    // Configure CORS
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
+    // Build routes
+    let app = routes::create_routes(state).layer(cors);
 
     // Run the server
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
     tracing::info!("🚀 Territorio Digital API listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
-}
-
-async fn root() -> &'static str {
-    "Territorio Digital API - Ready to serve"
-}
-
-async fn health() -> Json<HealthResponse> {
-    Json(HealthResponse {
-        status: "healthy".to_string(),
-        version: env!("CARGO_PKG_VERSION").to_string(),
-    })
 }
