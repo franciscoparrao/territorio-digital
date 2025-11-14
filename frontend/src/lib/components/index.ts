@@ -7,3 +7,5 @@ export { default as Logo } from './Logo.svelte';
 export { default as Button } from './Button.svelte';
 export { default as Card } from './Card.svelte';
 export { default as Section } from './Section.svelte';
+export { default as SEO } from './SEO.svelte';
+export { default as StructuredData } from './StructuredData.svelte';

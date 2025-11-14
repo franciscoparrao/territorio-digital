@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Section } from '$lib/components';
+	import { Button, Card, Section, SEO, StructuredData } from '$lib/components';
 
 	const skills = [
 		{
@@ -119,13 +119,34 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Sobre Nosotros - Territorio Digital</title>
-	<meta
-		name="description"
-		content="Equipo de especialistas en desarrollo web, data science y análisis satelital. Transformamos datos en decisiones inteligentes."
-	/>
-</svelte:head>
+<SEO
+	title="Sobre Nosotros"
+	description="Equipo multidisciplinario liderado por Francisco Parra, Doctor en Ingeniería Informática. Especialistas en desarrollo web, data science y análisis satelital."
+	url="https://territoriodigital.cl/about"
+	type="profile"
+/>
+
+<StructuredData
+	type="person"
+	person={{
+		name: 'Francisco José Parra Ortiz',
+		jobTitle: 'Doctor en Ciencias de la Ingeniería mención Informática',
+		email: 'francisco.parra.o@usach.cl',
+		telephone: '+56956826682',
+		url: 'https://territoriodigital.cl',
+		sameAs: ['https://www.linkedin.com/in/franciscojoseparraortiz'],
+		alumniOf: [
+			{
+				name: 'Universidad de Santiago de Chile',
+				url: 'https://www.usach.cl'
+			},
+			{
+				name: 'Universidad de Chile',
+				url: 'https://www.uchile.cl'
+			}
+		]
+	}}
+/>
 
 <!-- Hero -->
 <Section background="gradient" padding="lg">

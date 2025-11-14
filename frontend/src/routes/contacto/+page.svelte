@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Section } from '$lib/components';
+	import { Button, Card, Section, SEO } from '$lib/components';
 
 	let formData = $state({
 		name: '',
@@ -68,13 +68,12 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Contacto - Territorio Digital</title>
-	<meta
-		name="description"
-		content="Contáctame para discutir tu proyecto. Desarrollo web, data science, análisis satelital y más."
-	/>
-</svelte:head>
+<SEO
+	title="Contacto"
+	description="Contáctanos para discutir tu proyecto. Desarrollo web, data science, análisis satelital y más."
+	url="https://territoriodigital.cl/contacto"
+	type="website"
+/>
 
 <!-- Hero -->
 <Section background="gradient" padding="lg">

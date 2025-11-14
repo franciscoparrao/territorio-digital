@@ -1,10 +1,33 @@
 <script lang="ts">
-	import { Button, Card, Section } from '$lib/components';
+	import { Button, Card, Section, SEO, StructuredData } from '$lib/components';
 </script>
 
-<svelte:head>
-	<title>Inicio - Territorio Digital</title>
-</svelte:head>
+<SEO
+	title="Territorio Digital"
+	description="Especialistas en desarrollo web, data science, machine learning y análisis satelital. Transformamos datos en decisiones inteligentes."
+	url="https://territoriodigital.cl"
+	type="website"
+/>
+
+<StructuredData
+	type="organization"
+	organization={{
+		name: 'Territorio Digital',
+		description:
+			'Equipo multidisciplinario especializado en desarrollo web, data science, machine learning y análisis satelital',
+		url: 'https://territoriodigital.cl',
+		logo: 'https://territoriodigital.cl/logo.png',
+		email: 'francisco.parra.o@usach.cl',
+		telephone: '+56956826682',
+		address: {
+			streetAddress: '',
+			addressLocality: 'Santiago',
+			addressRegion: 'Región Metropolitana',
+			addressCountry: 'CL'
+		},
+		sameAs: ['https://www.linkedin.com/in/franciscojoseparraortiz']
+	}}
+/>
 
 <!-- Hero Section -->
 <Section background="gradient" padding="xl">
