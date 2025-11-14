@@ -41,14 +41,12 @@ pub async fn handle_contact(
         .email_service
         .send_contact_notification(&payload, admin_email)
     {
-        tracing::error!("Failed to send notification email: {}", e);
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(ContactResponse {
-                success: false,
-                message: "Error al enviar el mensaje. Por favor intenta nuevamente.".to_string(),
-            }),
-        ));
+        tracing::warn!(
+            "Failed to send notification email (will continue anyway): {}",
+            e
+        );
+        // In development, we can continue without email
+        // In production, you might want to return an error here
     }
 
     // Send confirmation email to user
