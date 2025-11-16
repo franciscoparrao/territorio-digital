@@ -5,37 +5,54 @@ Sitio web corporativo para Territorio Digital - Especialistas en desarrollo web,
 ## 🚀 Stack Tecnológico
 
 ### Frontend
-- **Framework:** SvelteKit
+- **Framework:** SvelteKit 2.47.1
 - **Lenguaje:** TypeScript
-- **Estilos:** TailwindCSS (próximamente)
-- **Deploy:** Vercel / Netlify
+- **Estilos:** TailwindCSS v3
+- **Blog:** mdsvex (Markdown para Svelte)
+- **SEO:** Sitemap, robots.txt, structured data
 
 ### Backend
-- **Framework:** Axum (Rust)
+- **Framework:** Axum (Rust 1.83)
 - **Runtime:** Tokio
-- **Base de datos:** MongoDB
-- **Email:** Lettre
+- **Base de datos:** MongoDB 7.0
+- **Email:** Lettre (SMTP)
+
+### Infraestructura
+- **Contenedores:** Docker + Docker Compose
+- **Reverse Proxy:** Nginx
+- **SSL:** Let's Encrypt / Certbot
+- **Hosting:** Digital Ocean
+- **Dominio:** territorio-digital.cl
 
 ## 📁 Estructura del Proyecto
 
 ```
 territorio-digital/
-├── frontend/          # Aplicación SvelteKit
+├── frontend/              # Aplicación SvelteKit
 │   ├── src/
-│   │   ├── routes/   # Páginas y rutas
-│   │   └── lib/      # Componentes y utilidades
-│   ├── static/       # Assets estáticos
+│   │   ├── routes/       # Páginas y rutas
+│   │   │   ├── blog/    # Sistema de blog con mdsvex
+│   │   │   └── portfolio/ # Portfolio de proyectos
+│   │   ├── lib/          # Componentes y utilidades
+│   │   └── posts/        # Artículos en Markdown
+│   ├── static/           # Assets estáticos
+│   ├── Dockerfile        # Imagen Docker para producción
 │   └── package.json
 │
-├── backend/          # API en Rust con Axum
+├── backend/              # API en Rust con Axum
 │   ├── src/
-│   │   └── main.rs
+│   │   └── main.rs      # API REST + MongoDB
 │   ├── Cargo.toml
+│   ├── Dockerfile        # Imagen Docker para producción
 │   └── .env.example
 │
-├── docs/             # Documentación
-├── ROADMAP.md        # Hoja de ruta del proyecto
-└── README.md         # Este archivo
+├── docker-compose.yml    # Orquestación de servicios
+├── nginx.conf           # Configuración de reverse proxy
+├── deploy.sh            # Script de deploy automatizado
+├── setup-server.sh      # Setup inicial del servidor
+├── DEPLOY.md            # Guía completa de deployment
+├── ROADMAP.md           # Hoja de ruta del proyecto
+└── README.md            # Este archivo
 ```
 
 ## 🛠️ Instalación y Desarrollo
@@ -78,6 +95,7 @@ El backend estará disponible en `http://localhost:3000`
 
 - `GET /` - Raíz de la API
 - `GET /health` - Health check
+- `POST /api/contact` - Formulario de contacto (envía email)
 
 ## 🧪 Testing
 
@@ -112,18 +130,45 @@ El binario estará en `backend/target/release/territorio-digital-api`
 
 ## 🚢 Deployment
 
-### Frontend (Vercel)
+Esta aplicación está configurada para despliegue en **Digital Ocean** usando Docker.
+
+### Deploy Completo (Recomendado)
+
+Ver la guía completa en [DEPLOY.md](./DEPLOY.md) que incluye:
+
+- Configuración del servidor Digital Ocean
+- Setup de dominio `territorio-digital.cl`
+- Configuración SSL con Let's Encrypt
+- Monitoreo y mantenimiento
+- Troubleshooting
+
+### Quick Start - Deploy Local con Docker
+
 ```bash
-cd frontend
-vercel
+# 1. Configurar variables de entorno
+cp .env.production.example .env.production
+nano .env.production  # Editar con tus credenciales
+
+# 2. Build y deploy
+./deploy.sh
+
+# O manualmente:
+docker compose --env-file .env.production up -d --build
 ```
 
-### Backend (Docker - próximamente)
+### Deploy en Servidor
+
 ```bash
-cd backend
-docker build -t territorio-digital-api .
-docker run -p 3000:3000 territorio-digital-api
+# 1. Setup inicial del servidor (una sola vez)
+curl -fsSL https://raw.githubusercontent.com/franciscoparrao/territorio-digital/master/setup-server.sh | sudo bash
+
+# 2. Deploy de la aplicación
+./deploy.sh
 ```
+
+La aplicación estará disponible en:
+- **Producción:** https://territorio-digital.cl
+- **API:** https://territorio-digital.cl/api
 
 ## 📝 Servicios
 

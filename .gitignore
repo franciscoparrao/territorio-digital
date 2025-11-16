@@ -13,6 +13,13 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+.env.production
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
 
 # Frontend (SvelteKit)
 frontend/node_modules/
