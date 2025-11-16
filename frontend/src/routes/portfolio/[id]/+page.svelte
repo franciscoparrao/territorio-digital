@@ -72,7 +72,7 @@
 			</div>
 		</div>
 
-		<p class="mt-6 text-xl text-secondary-700">{project.short Description}</p>
+		<p class="mt-6 text-xl text-secondary-700">{project.shortDescription}</p>
 	</div>
 </Section>
 
