@@ -28,7 +28,6 @@ frontend/build/
 frontend/dist/
 frontend/.vercel/
 frontend/.netlify/
-frontend/package-lock.json
 frontend/yarn.lock
 frontend/pnpm-lock.yaml
 
