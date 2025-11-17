@@ -61,7 +61,7 @@ async fn main() {
     let app = routes::create_routes(state).layer(cors);
 
     // Run the server
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     tracing::info!("🚀 Territorio Digital API listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
