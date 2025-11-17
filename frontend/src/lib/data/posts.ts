@@ -30,31 +30,32 @@ export const posts: BlogPost[] = [
 		category: 'tutoriales',
 		tags: ['Go', 'React', 'IA', 'Chatbot', 'RAG', 'OpenRouter'],
 		featured: true
-	},
-	{
-		slug: 'google-earth-engine-chile',
-		title: 'Google Earth Engine para análisis ambiental en Chile',
-		excerpt:
-			'Descubre cómo usar Google Earth Engine para monitorear glaciares, sequía e incendios en Chile. Casos prácticos con scripts y datos reales.',
-		author: 'Francisco Parra',
-		date: '2024-11-14',
-		readingTime: 12,
-		category: 'tutoriales',
-		tags: ['GEE', 'Teledetección', 'Chile', 'Medio Ambiente', 'Python'],
-		featured: true
-	},
-	{
-		slug: 'svelte-5-runes',
-		title: 'Svelte 5 Runes: La nueva forma de manejar estado',
-		excerpt:
-			'Explora las nuevas Runes de Svelte 5 ($state, $derived, $effect) y aprende cómo simplifican el manejo de estado reactivo en tus aplicaciones.',
-		author: 'Francisco Parra',
-		date: '2024-11-13',
-		readingTime: 10,
-		category: 'desarrollo-web',
-		tags: ['Svelte', 'SvelteKit', 'JavaScript', 'Frontend', 'Runes'],
-		featured: true
 	}
+	// TODO: Descomentar cuando los archivos .md estén creados
+	// {
+	// 	slug: 'google-earth-engine-chile',
+	// 	title: 'Google Earth Engine para análisis ambiental en Chile',
+	// 	excerpt:
+	// 		'Descubre cómo usar Google Earth Engine para monitorear glaciares, sequía e incendios en Chile. Casos prácticos con scripts y datos reales.',
+	// 	author: 'Francisco Parra',
+	// 	date: '2024-11-14',
+	// 	readingTime: 12,
+	// 	category: 'tutoriales',
+	// 	tags: ['GEE', 'Teledetección', 'Chile', 'Medio Ambiente', 'Python'],
+	// 	featured: true
+	// },
+	// {
+	// 	slug: 'svelte-5-runes',
+	// 	title: 'Svelte 5 Runes: La nueva forma de manejar estado',
+	// 	excerpt:
+	// 		'Explora las nuevas Runes de Svelte 5 ($state, $derived, $effect) y aprende cómo simplifican el manejo de estado reactivo en tus aplicaciones.',
+	// 	author: 'Francisco Parra',
+	// 	date: '2024-11-13',
+	// 	readingTime: 10,
+	// 	category: 'desarrollo-web',
+	// 	tags: ['Svelte', 'SvelteKit', 'JavaScript', 'Frontend', 'Runes'],
+	// 	featured: true
+	// }
 ];
 
 export const categories: { id: BlogCategory; name: string; description: string }[] = [
