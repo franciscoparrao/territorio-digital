@@ -34,7 +34,6 @@ frontend/pnpm-lock.yaml
 
 # Backend (Rust)
 backend/target/
-backend/Cargo.lock
 backend/.env
 
 # Logs
