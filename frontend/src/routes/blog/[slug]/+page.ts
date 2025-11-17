@@ -11,7 +11,7 @@ export const load: PageLoad = async ({ params }) => {
 
 	// Import the markdown file dynamically
 	try {
-		const module = await import(`./${params.slug}.md`);
+		const module = await import(`./posts/${params.slug}.md`);
 
 		return {
 			post,
