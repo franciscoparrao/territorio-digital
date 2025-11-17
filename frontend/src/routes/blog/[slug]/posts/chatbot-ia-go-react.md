@@ -210,7 +210,7 @@ Después de implementar el sistema:
 
 - ✅ **1,770 FAQs** indexadas y buscables
 - ✅ **71 carreras** con información detallada
-- ✅ **Latencia < 2s** para respuestas
+- ✅ **Latencia &lt; 2s** para respuestas
 - ✅ **95% precisión** en búsqueda semántica
 - ✅ **Escalable** a miles de usuarios concurrentes
 
