@@ -30,10 +30,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy binary from builder
-COPY --from=builder /app/target/release/backend /usr/local/bin/backend
+COPY --from=builder /app/target/release/territorio-digital-api /usr/local/bin/territorio-digital-api
 
 # Expose port
 EXPOSE 3000
 
 # Run the binary
-CMD ["backend"]
+CMD ["territorio-digital-api"]
