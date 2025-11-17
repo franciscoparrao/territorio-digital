@@ -17,8 +17,8 @@
 		formState = 'submitting';
 
 		try {
-			const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-			const response = await fetch(`${apiUrl}/api/contact`, {
+			// Use relative URL so nginx can proxy to backend
+			const response = await fetch('/api/contact', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
