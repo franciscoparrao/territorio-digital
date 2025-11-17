@@ -31,7 +31,7 @@
 		},
 		{
 			name: 'Email',
-			href: 'mailto:contacto@territoriodigital.cl',
+			href: 'mailto:contacto@territorio-digital.cl',
 			icon: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z'
 		}
 	];
@@ -102,10 +102,10 @@
 				<ul class="mt-4 space-y-3 text-sm">
 					<li>
 						<a
-							href="mailto:contacto@territoriodigital.cl"
+							href="mailto:contacto@territorio-digital.cl"
 							class="transition-colors duration-200 hover:text-white"
 						>
-							contacto@territoriodigital.cl
+							contacto@territorio-digital.cl
 						</a>
 					</li>
 					<li>Chile</li>
