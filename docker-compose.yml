@@ -29,7 +29,7 @@ services:
     container_name: territorio-digital-backend
     restart: unless-stopped
     environment:
-      MONGO_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/${MONGODB_DATABASE:-territorio_digital}?authSource=admin
       MONGODB_DATABASE: ${MONGODB_DATABASE:-territorio_digital}
       PORT: 3000
       SMTP_HOST: ${SMTP_HOST}
