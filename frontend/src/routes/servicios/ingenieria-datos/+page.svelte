@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { Button, Section } from '$lib/components';
+	import { Button, Section, SEO, BreadcrumbSchema } from '$lib/components';
 </script>
 
-<svelte:head>
-	<title>Ingeniería de Datos - Servicios | Territorio Digital</title>
-	<meta
-		name="description"
-		content="Pipelines ETL, data warehousing y arquitecturas de datos escalables para tu organización."
-	/>
-</svelte:head>
+<SEO
+	title="Ingeniería de Datos"
+	description="Pipelines ETL/ELT, data warehousing y arquitecturas de datos escalables con Apache Airflow, dbt y tecnologías modernas."
+	url="https://territorio-digital.cl/servicios/ingenieria-datos"
+	image="https://territorio-digital.cl/og-ingenieria-datos.jpg"
+	type="website"
+/>
+
+<BreadcrumbSchema
+	items={[
+		{ name: 'Inicio', url: 'https://territorio-digital.cl' },
+		{ name: 'Servicios', url: 'https://territorio-digital.cl/servicios' },
+		{ name: 'Ingeniería de Datos', url: 'https://territorio-digital.cl/servicios/ingenieria-datos' }
+	]}
+/>
 
 <Section background="gradient" padding="xl">
 	<div class="mx-auto max-w-3xl text-center">

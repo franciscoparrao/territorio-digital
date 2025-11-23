@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { Button, Section } from '$lib/components';
+	import { Button, Section, SEO, BreadcrumbSchema } from '$lib/components';
 </script>
 
-<svelte:head>
-	<title>Data Science & Machine Learning - Servicios | Territorio Digital</title>
-	<meta
-		name="description"
-		content="Análisis de datos avanzado, modelos predictivos y machine learning para decisiones basadas en datos."
-	/>
-</svelte:head>
+<SEO
+	title="Data Science & Machine Learning"
+	description="Análisis de datos avanzado, modelos predictivos y machine learning para decisiones basadas en datos con Python, TensorFlow y scikit-learn."
+	url="https://territorio-digital.cl/servicios/data-science"
+	image="https://territorio-digital.cl/og-data-science.jpg"
+	type="website"
+/>
+
+<BreadcrumbSchema
+	items={[
+		{ name: 'Inicio', url: 'https://territorio-digital.cl' },
+		{ name: 'Servicios', url: 'https://territorio-digital.cl/servicios' },
+		{ name: 'Data Science', url: 'https://territorio-digital.cl/servicios/data-science' }
+	]}
+/>
 
 <Section background="gradient" padding="xl">
 	<div class="mx-auto max-w-3xl text-center">

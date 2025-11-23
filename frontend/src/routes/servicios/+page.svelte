@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Section } from '$lib/components';
+	import { Button, Card, Section, SEO } from '$lib/components';
 
 	const services = [
 		{
@@ -90,13 +90,13 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Servicios - Territorio Digital</title>
-	<meta
-		name="description"
-		content="Desarrollo web, data science, análisis satelital, ingeniería de datos y asesoría técnica. Soluciones tecnológicas integrales para tu negocio."
-	/>
-</svelte:head>
+<SEO
+	title="Servicios Tecnológicos Integrales"
+	description="Desarrollo web, data science, análisis satelital, ingeniería de datos y asesoría técnica. Soluciones tecnológicas integrales para impulsar tu negocio."
+	url="https://territorio-digital.cl/servicios"
+	image="https://territorio-digital.cl/og-servicios.jpg"
+	type="website"
+/>
 
 <!-- Hero Section -->
 <Section background="gradient" padding="lg">

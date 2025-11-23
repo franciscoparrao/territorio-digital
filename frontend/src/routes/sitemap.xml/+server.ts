@@ -1,7 +1,7 @@
 export const prerender = true;
 
 export async function GET() {
-	const baseUrl = 'https://territoriodigital.cl';
+	const baseUrl = 'https://territorio-digital.cl';
 
 	const pages = [
 		{ url: '', priority: '1.0', changefreq: 'weekly' },
@@ -14,7 +14,9 @@ export async function GET() {
 		{ url: '/servicios/asesoria', priority: '0.8', changefreq: 'monthly' },
 		{ url: '/portfolio', priority: '0.7', changefreq: 'weekly' },
 		{ url: '/blog', priority: '0.7', changefreq: 'weekly' },
-		{ url: '/contacto', priority: '0.9', changefreq: 'monthly' }
+		{ url: '/contacto', priority: '0.9', changefreq: 'monthly' },
+		{ url: '/privacidad', priority: '0.3', changefreq: 'yearly' },
+		{ url: '/terminos', priority: '0.3', changefreq: 'yearly' }
 	];
 
 	const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

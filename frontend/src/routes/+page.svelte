@@ -3,21 +3,21 @@
 </script>
 
 <SEO
-	title="Territorio Digital"
-	description="Especialistas en desarrollo web, data science, machine learning y análisis satelital. Transformamos datos en decisiones inteligentes."
-	url="https://territoriodigital.cl"
+	title="Territorio Digital - Desarrollo Web, Data Science y Análisis Satelital en Chile"
+	description="Expertos en desarrollo web moderno, data science, machine learning y análisis geoespacial. Transformamos datos en decisiones estratégicas para impulsar tu negocio en Chile."
+	url="https://territorio-digital.cl"
 	type="website"
 />
 
 <StructuredData
-	type="organization"
+	type="localbusiness"
 	organization={{
 		name: 'Territorio Digital',
 		description:
-			'Equipo multidisciplinario especializado en desarrollo web, data science, machine learning y análisis satelital',
-		url: 'https://territoriodigital.cl',
-		logo: 'https://territoriodigital.cl/logo.png',
-		email: 'francisco.parra.o@usach.cl',
+			'Servicios profesionales de desarrollo web, data science, machine learning y análisis satelital en Chile',
+		url: 'https://territorio-digital.cl',
+		logo: 'https://territorio-digital.cl/logo.png',
+		email: 'contacto@territorio-digital.cl',
 		telephone: '+56956826682',
 		address: {
 			streetAddress: '',

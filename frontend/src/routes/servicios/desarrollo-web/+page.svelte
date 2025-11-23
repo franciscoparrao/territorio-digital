@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { Button, Card, Section } from '$lib/components';
+	import { Button, Card, Section, SEO, BreadcrumbSchema } from '$lib/components';
 </script>
 
-<svelte:head>
-	<title>Desarrollo Web - Servicios | Territorio Digital</title>
-	<meta
-		name="description"
-		content="Aplicaciones web modernas con SvelteKit, React y TypeScript. SPAs, PWAs y arquitecturas escalables."
-	/>
-</svelte:head>
+<SEO
+	title="Desarrollo Web Moderno"
+	description="Aplicaciones web modernas con SvelteKit, React y TypeScript. SPAs, PWAs y arquitecturas escalables para tu negocio."
+	url="https://territorio-digital.cl/servicios/desarrollo-web"
+	image="https://territorio-digital.cl/og-desarrollo-web.jpg"
+	type="website"
+/>
+
+<BreadcrumbSchema
+	items={[
+		{ name: 'Inicio', url: 'https://territorio-digital.cl' },
+		{ name: 'Servicios', url: 'https://territorio-digital.cl/servicios' },
+		{ name: 'Desarrollo Web', url: 'https://territorio-digital.cl/servicios/desarrollo-web' }
+	]}
+/>
 
 <!-- Hero -->
 <Section background="gradient" padding="lg">

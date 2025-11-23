@@ -2,5 +2,12 @@
 User-agent: *
 Allow: /
 
+# Disallow admin or private paths (if any in the future)
+# Disallow: /admin/
+# Disallow: /private/
+
+# Crawl-delay for respectful crawling
+# Crawl-delay: 1
+
 # Sitemap
-Sitemap: https://territoriodigital.cl/sitemap.xml
+Sitemap: https://territorio-digital.cl/sitemap.xml

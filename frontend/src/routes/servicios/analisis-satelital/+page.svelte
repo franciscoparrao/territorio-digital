@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { Button, Section } from '$lib/components';
+	import { Button, Section, SEO, BreadcrumbSchema } from '$lib/components';
 </script>
 
-<svelte:head>
-	<title>Análisis Satelital & Geoespacial - Servicios | Territorio Digital</title>
-	<meta
-		name="description"
-		content="Procesamiento de imágenes satelitales, análisis geoespacial y monitoreo ambiental con tecnologías GIS."
-	/>
-</svelte:head>
+<SEO
+	title="Análisis Satelital & Geoespacial"
+	description="Procesamiento de imágenes satelitales, análisis geoespacial y monitoreo ambiental con tecnologías GIS y Python."
+	url="https://territorio-digital.cl/servicios/analisis-satelital"
+	image="https://territorio-digital.cl/og-analisis-satelital.jpg"
+	type="website"
+/>
+
+<BreadcrumbSchema
+	items={[
+		{ name: 'Inicio', url: 'https://territorio-digital.cl' },
+		{ name: 'Servicios', url: 'https://territorio-digital.cl/servicios' },
+		{ name: 'Análisis Satelital', url: 'https://territorio-digital.cl/servicios/analisis-satelital' }
+	]}
+/>
 
 <Section background="gradient" padding="xl">
 	<div class="mx-auto max-w-3xl text-center">

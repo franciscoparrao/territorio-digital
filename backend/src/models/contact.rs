@@ -27,6 +27,10 @@ pub struct ContactRequest {
         message = "El mensaje debe tener entre 10 y 2000 caracteres"
     ))]
     pub message: String,
+
+    // Anti-spam: timestamp from frontend
+    #[serde(rename = "_timestamp")]
+    pub timestamp: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -29,9 +29,9 @@
 </script>
 
 <SEO
-	title="Portfolio"
-	description="Casos de éxito y proyectos destacados en desarrollo web, data science, machine learning y análisis geoespacial."
-	url="https://territoriodigital.cl/portfolio"
+	title="Portfolio - Proyectos Destacados | Territorio Digital"
+	description="Explora nuestros casos de éxito: chatbots con IA, dashboards interactivos, sistemas de análisis satelital, machine learning y aplicaciones web modernas. Proyectos reales con impacto medible."
+	url="https://territorio-digital.cl/portfolio"
 	type="website"
 />
 

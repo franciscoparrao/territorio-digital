@@ -1,14 +1,22 @@
 <script lang="ts">
-	import { Button, Section } from '$lib/components';
+	import { Button, Section, SEO, BreadcrumbSchema } from '$lib/components';
 </script>
 
-<svelte:head>
-	<title>Asesoría Técnica - Servicios | Territorio Digital</title>
-	<meta
-		name="description"
-		content="Consultoría en arquitectura de software, code review, optimización y mejores prácticas de desarrollo."
-	/>
-</svelte:head>
+<SEO
+	title="Asesoría Técnica"
+	description="Consultoría especializada en arquitectura de software, code review, optimización de performance y mejores prácticas de desarrollo."
+	url="https://territorio-digital.cl/servicios/asesoria"
+	image="https://territorio-digital.cl/og-asesoria.jpg"
+	type="website"
+/>
+
+<BreadcrumbSchema
+	items={[
+		{ name: 'Inicio', url: 'https://territorio-digital.cl' },
+		{ name: 'Servicios', url: 'https://territorio-digital.cl/servicios' },
+		{ name: 'Asesoría Técnica', url: 'https://territorio-digital.cl/servicios/asesoria' }
+	]}
+/>
 
 <Section background="gradient" padding="xl">
 	<div class="mx-auto max-w-3xl text-center">

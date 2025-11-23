@@ -120,9 +120,9 @@
 </script>
 
 <SEO
-	title="Sobre Nosotros"
-	description="Equipo multidisciplinario liderado por Francisco Parra, Doctor en Ingeniería Informática. Especialistas en desarrollo web, data science y análisis satelital."
-	url="https://territoriodigital.cl/about"
+	title="Sobre Nosotros - Territorio Digital"
+	description="Equipo liderado por Francisco Parra, Doctor en Ingeniería Informática con experiencia en desarrollo web full-stack, machine learning y análisis geoespacial con tecnologías satelitales."
+	url="https://territorio-digital.cl/about"
 	type="profile"
 />
 

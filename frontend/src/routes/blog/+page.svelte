@@ -22,9 +22,9 @@
 </script>
 
 <SEO
-	title="Blog"
-	description="Artículos sobre desarrollo web, data science, machine learning, análisis geoespacial y tecnología. Tutoriales, investigación y casos de uso reales."
-	url="https://territoriodigital.cl/blog"
+	title="Blog Técnico - Territorio Digital"
+	description="Artículos técnicos sobre desarrollo web con SvelteKit y React, data science con Python, machine learning, análisis satelital con Google Earth Engine. Tutoriales prácticos y casos de uso reales."
+	url="https://territorio-digital.cl/blog"
 	type="website"
 />
 
