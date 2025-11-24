@@ -14,7 +14,7 @@ services:
     networks:
       - app-network
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"  # Only accessible from localhost
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
