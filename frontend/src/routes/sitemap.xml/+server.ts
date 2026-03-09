@@ -12,6 +12,7 @@ export async function GET() {
 		{ url: '/servicios/analisis-satelital', priority: '0.8', changefreq: 'monthly' },
 		{ url: '/servicios/ingenieria-datos', priority: '0.8', changefreq: 'monthly' },
 		{ url: '/servicios/asesoria', priority: '0.8', changefreq: 'monthly' },
+		{ url: '/publicaciones', priority: '0.8', changefreq: 'monthly' },
 		{ url: '/portfolio', priority: '0.7', changefreq: 'weekly' },
 		{ url: '/blog', priority: '0.7', changefreq: 'weekly' },
 		{ url: '/contacto', priority: '0.9', changefreq: 'monthly' },

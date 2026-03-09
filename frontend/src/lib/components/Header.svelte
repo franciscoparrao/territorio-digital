@@ -8,6 +8,7 @@
 		{ name: 'Inicio', href: '/' },
 		{ name: 'Servicios', href: '/servicios' },
 		{ name: 'Portfolio', href: '/portfolio' },
+		{ name: 'Publicaciones', href: '/publicaciones' },
 		{ name: 'Blog', href: '/blog' },
 		{ name: 'Sobre mí', href: '/about' },
 		{ name: 'Contacto', href: '/contacto' }

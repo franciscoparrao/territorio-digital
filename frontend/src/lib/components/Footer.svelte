@@ -14,6 +14,7 @@
 	const company = [
 		{ name: 'Sobre mí', href: '/about' },
 		{ name: 'Portfolio', href: '/portfolio' },
+		{ name: 'Publicaciones', href: '/publicaciones' },
 		{ name: 'Blog', href: '/blog' },
 		{ name: 'Contacto', href: '/contacto' }
 	];
