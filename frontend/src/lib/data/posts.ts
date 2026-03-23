@@ -20,6 +20,18 @@ export type BlogCategory =
 
 export const posts: BlogPost[] = [
 	{
+		slug: 'surtgis-quickstart-analisis-terreno',
+		title: 'SurtGIS Quickstart: Análisis de terreno de los Andes en 5 minutos',
+		excerpt:
+			'De instalación a mapa de pendientes de la cordillera de los Andes en 10 comandos. Sin Python, sin GDAL, sin configuración.',
+		author: 'Francisco Parra',
+		date: '2026-03-22',
+		readingTime: 8,
+		category: 'tutoriales',
+		tags: ['SurtGIS', 'Rust', 'GIS', 'Terrain Analysis', 'CLI', 'STAC', 'DEM'],
+		featured: true
+	},
+	{
 		slug: 'chatbot-ia-go-react',
 		title: 'Cómo construir un chatbot con IA usando Go y React',
 		excerpt:
