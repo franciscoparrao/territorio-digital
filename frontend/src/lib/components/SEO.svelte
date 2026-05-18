@@ -17,8 +17,8 @@
 	let {
 		title,
 		description,
-		url = 'https://territoriodigital.cl',
-		image = 'https://territoriodigital.cl/og-image.jpg',
+		url = 'https://territorio-digital.cl',
+		image = 'https://territorio-digital.cl/og-image.jpg',
 		type = 'website',
 		article
 	}: Props = $props();

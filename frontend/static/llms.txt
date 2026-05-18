@@ -1,0 +1,52 @@
+# Territorio Digital
+
+> Servicios profesionales chilenos en desarrollo web, data science, machine learning y análisis satelital. Fundada por Francisco Parra, Doctor en Ciencias de la Ingeniería mención Informática (USACH). Sede en Santiago, Chile.
+
+Territorio Digital integra capacidades de ingeniería de software con investigación aplicada en datos geoespaciales y aprendizaje automático. Trabajamos con stack moderno (SvelteKit, Rust, Python) y herramientas open source GIS (QGIS, GRASS, GDAL, Google Earth Engine).
+
+## Servicios principales
+
+- [Desarrollo Web](https://territorio-digital.cl/servicios/desarrollo-web): Aplicaciones web modernas, full-stack, SSG/SSR. Stack típico SvelteKit + Rust/Go backend.
+- [Data Science & Machine Learning](https://territorio-digital.cl/servicios/data-science): Modelos predictivos, ETL, dashboards, MLOps.
+- [Análisis Satelital](https://territorio-digital.cl/servicios/analisis-satelital): Teledetección, clasificación de cobertura, monitoreo multitemporal con Sentinel/Landsat.
+- [Ingeniería de Datos](https://territorio-digital.cl/servicios/ingenieria-datos): Pipelines, arquitecturas modernas, integración multi-fuente.
+- [Asesoría Técnica](https://territorio-digital.cl/servicios/asesoria): Consultoría en arquitectura, code review, optimización.
+
+## Portfolio (proyectos destacados)
+
+- [MCP Gateway](https://territorio-digital.cl/portfolio/mcp-gateway): Orquestador GIS con IA que integra 1.100+ herramientas de OTB, QGIS, GRASS, SAGA, Planetary Computer bajo el protocolo MCP.
+- [SurtGIS](https://territorio-digital.cl/portfolio/surtgis): Plataforma GIS de alto rendimiento para análisis de terreno (Rust).
+- [Chatbot Admisión USACH](https://territorio-digital.cl/portfolio/chatbot-admision-usach): Asistente conversacional institucional para postulantes.
+- [CRM Clínicas](https://territorio-digital.cl/portfolio/crm-clinicas): SaaS de gestión clínica multi-tenant.
+- [AgroWatch](https://territorio-digital.cl/portfolio/agrowatch): Observatorio agroclimático con datos satelitales.
+- [Dashboard SERNAPESCA](https://territorio-digital.cl/portfolio/sernapesca-dashboard): Sistema de gestión acuícola.
+- [Chatbot Factory](https://territorio-digital.cl/portfolio/chatbot-factory): Plataforma enterprise para crear chatbots IA.
+- [WaveMind](https://territorio-digital.cl/portfolio/wavemind): Análisis musical con IA.
+- [Ver los 12 proyectos completos](https://territorio-digital.cl/portfolio)
+
+## Blog
+
+- [SurtGIS Quickstart: Análisis de terreno de los Andes en 5 minutos](https://territorio-digital.cl/blog/surtgis-quickstart-analisis-terreno) — Tutorial práctico (2026-03-22).
+- [Cómo construir un chatbot con IA usando Go y React](https://territorio-digital.cl/blog/chatbot-ia-go-react) — Guía técnica (2024-11-15).
+- [Ver todos los artículos](https://territorio-digital.cl/blog)
+
+## Publicaciones académicas
+
+- [Publicaciones del fundador](https://territorio-digital.cl/publicaciones): Papers indexados (RSASE, ISPRS y otros) en teledetección, susceptibilidad multi-amenaza, y machine learning aplicado a geociencias.
+
+## Sobre el equipo
+
+- [About — Francisco Parra](https://territorio-digital.cl/about): Geólogo (U. de Chile) + Doctor en Informática (USACH). Investigador asociado UOH/USACH/CITIAPS.
+
+## Contacto
+
+- Email: contacto@territorio-digital.cl
+- WhatsApp: +56 9 5682 6682
+- LinkedIn: https://www.linkedin.com/in/franciscojoseparraortiz
+- [Formulario de contacto](https://territorio-digital.cl/contacto)
+
+## Optional
+
+- [Política de privacidad](https://territorio-digital.cl/privacidad)
+- [Términos y condiciones](https://territorio-digital.cl/terminos)
+- [Sitemap XML](https://territorio-digital.cl/sitemap.xml)

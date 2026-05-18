@@ -133,7 +133,7 @@
 		jobTitle: 'Doctor en Ciencias de la Ingeniería mención Informática',
 		email: 'francisco.parra.o@usach.cl',
 		telephone: '+56956826682',
-		url: 'https://territoriodigital.cl',
+		url: 'https://territorio-digital.cl',
 		sameAs: ['https://www.linkedin.com/in/franciscojoseparraortiz'],
 		alumniOf: [
 			{

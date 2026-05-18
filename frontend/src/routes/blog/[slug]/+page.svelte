@@ -21,14 +21,48 @@
 <SEO
 	title={post.title}
 	description={post.excerpt}
-	url="https://territoriodigital.cl/blog/{post.slug}"
+	url="https://territorio-digital.cl/blog/{post.slug}"
 	type="article"
 	article={{
 		publishedTime: post.date,
+		modifiedTime: post.date,
 		author: post.author,
 		tags: post.tags
 	}}
 />
+
+<svelte:head>
+	{@html `<script type="application/ld+json">${JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'BlogPosting',
+		headline: post.title,
+		description: post.excerpt,
+		image: post.coverImage
+			? `https://territorio-digital.cl${post.coverImage}`
+			: 'https://territorio-digital.cl/og-image.jpg',
+		author: {
+			'@type': 'Person',
+			name: post.author,
+			url: 'https://territorio-digital.cl/about'
+		},
+		datePublished: post.date,
+		dateModified: post.date,
+		publisher: {
+			'@type': 'Organization',
+			name: 'Territorio Digital',
+			logo: {
+				'@type': 'ImageObject',
+				url: 'https://territorio-digital.cl/logo.png'
+			}
+		},
+		mainEntityOfPage: {
+			'@type': 'WebPage',
+			'@id': `https://territorio-digital.cl/blog/${post.slug}`
+		},
+		keywords: post.tags.join(', '),
+		articleSection: category?.name
+	})}</script>`}
+</svelte:head>
 
 <!-- Header -->
 <header class="border-b border-secondary-200 bg-gradient-to-br from-primary-50 to-white py-12">

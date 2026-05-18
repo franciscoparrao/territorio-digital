@@ -190,7 +190,7 @@ Propietario - Territorio Digital © 2025
 
 **Francisco Parra**
 - LinkedIn: [Tu LinkedIn]
-- Email: contacto@territoriodigital.cl
+- Email: contacto@territorio-digital.cl
 
 ---
 

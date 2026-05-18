@@ -12,7 +12,7 @@
 <SEO
 	title={project.title}
 	description={project.shortDescription}
-	url="https://territoriodigital.cl/portfolio/{project.id}"
+	url="https://territorio-digital.cl/portfolio/{project.id}"
 	type="article"
 />
 
