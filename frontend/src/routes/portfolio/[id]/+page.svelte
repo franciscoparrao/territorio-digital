@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Section, SEO } from '$lib/components';
+	import { Button, Card, Section, SEO, BreadcrumbSchema } from '$lib/components';
 	import { categories } from '$lib/data/projects';
 	import type { PageData } from './$types';
 
@@ -14,6 +14,14 @@
 	description={project.shortDescription}
 	url="https://territorio-digital.cl/portfolio/{project.id}"
 	type="article"
+/>
+
+<BreadcrumbSchema
+	items={[
+		{ name: 'Inicio', url: 'https://territorio-digital.cl' },
+		{ name: 'Portfolio', url: 'https://territorio-digital.cl/portfolio' },
+		{ name: project.title, url: `https://territorio-digital.cl/portfolio/${project.id}` }
+	]}
 />
 
 <!-- Hero -->

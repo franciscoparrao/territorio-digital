@@ -1,6 +1,56 @@
 <script lang="ts">
 	import { Button, Card, Section, SEO, BreadcrumbSchema } from '$lib/components';
+
+	const faqs = [
+		{
+			question: '¿Cuánto cuesta desarrollar un sitio web?',
+			answer:
+				'Para un sitio web informativo profesional el rango típico va de $890.000 a $1.500.000 CLP. Aplicaciones web con funcionalidad personalizada (sistema de reservas, e-commerce, panel de administración, etc.) parten desde $2.290.000 CLP. El precio final depende del alcance: cantidad de páginas, integraciones, idiomas, y nivel de personalización del diseño.'
+		},
+		{
+			question: '¿Cuánto tiempo toma desarrollar un proyecto?',
+			answer:
+				'Un sitio web informativo se entrega típicamente en 2 a 4 semanas. Aplicaciones web con backend personalizado toman entre 6 y 10 semanas. Trabajamos en sprints de entregas incrementales para que el cliente pueda revisar y dar feedback continuo durante todo el proceso.'
+		},
+		{
+			question: '¿El hosting y el dominio están incluidos?',
+			answer:
+				'El hosting cloud profesional, certificado SSL, backup diario y monitoreo de uptime están incluidos en una tarifa anual desde $80.000 CLP. El dominio (.cl, .com) se gestiona y paga directamente por el cliente ante el registrar correspondiente (NIC Chile para .cl, aproximadamente $9.000 CLP/año).'
+		},
+		{
+			question: '¿Qué stack tecnológico usan?',
+			answer:
+				'Para frontend: SvelteKit y React con TypeScript, TailwindCSS. Para backend: Rust (Axum) cuando el proyecto requiere alto rendimiento, Node.js o Go para casos más estándar. Bases de datos: PostgreSQL y MongoDB. Todo el código se entrega abierto al cliente al final del proyecto.'
+		},
+		{
+			question: '¿Trabajan con clientes fuera de Chile?',
+			answer:
+				'Sí. Trabajamos remotamente con clientes en toda Latinoamérica y España. Las reuniones se coordinan por videollamada en horario flexible. Los precios se mantienen en pesos chilenos (CLP) o se ajustan al equivalente en USD/EUR según el cliente.'
+		},
+		{
+			question: '¿Qué pasa después de la entrega del proyecto?',
+			answer:
+				'Ofrecemos 90 días de garantía sobre el desarrollo entregado, durante los cuales corregimos sin costo cualquier bug encontrado. Posteriormente, los cambios y mejoras se cotizan a $35.000 CLP/hora. El hosting con soporte se renueva anualmente y mantiene el sitio operativo, seguro y respaldado.'
+		}
+	];
+
+	const faqSchema = {
+		'@context': 'https://schema.org',
+		'@type': 'FAQPage',
+		mainEntity: faqs.map((faq) => ({
+			'@type': 'Question',
+			name: faq.question,
+			acceptedAnswer: {
+				'@type': 'Answer',
+				text: faq.answer
+			}
+		}))
+	};
 </script>
+
+<svelte:head>
+	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
+</svelte:head>
 
 <SEO
 	title="Desarrollo Web Moderno"
@@ -171,6 +221,35 @@
 						<p class="mt-2 text-secondary-600">{step.description}</p>
 					</div>
 				</div>
+			{/each}
+		</div>
+	</div>
+</Section>
+
+<!-- FAQ -->
+<Section background="gray" padding="lg">
+	<div class="mx-auto max-w-3xl">
+		<h2 class="text-center text-3xl font-bold text-secondary-900">Preguntas Frecuentes</h2>
+		<p class="mt-4 text-center text-lg text-secondary-600">
+			Las dudas más comunes de quienes contactan por un proyecto web
+		</p>
+
+		<div class="mt-12 space-y-4">
+			{#each faqs as faq, i (i)}
+				<details class="group rounded-lg border border-secondary-200 bg-white p-6 transition-shadow hover:shadow-md">
+					<summary class="flex cursor-pointer items-center justify-between text-lg font-semibold text-secondary-900">
+						<span>{faq.question}</span>
+						<svg
+							class="h-5 w-5 flex-shrink-0 text-secondary-500 transition-transform group-open:rotate-180"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+						</svg>
+					</summary>
+					<p class="mt-4 text-secondary-600">{faq.answer}</p>
+				</details>
 			{/each}
 		</div>
 	</div>

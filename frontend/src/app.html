@@ -4,38 +4,28 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-		<!-- Performance optimizations -->
-		<meta name="theme-color" content="#3B82F6" />
+		<!-- Theme + PWA -->
+		<meta name="theme-color" content="#1E3A5F" />
 		<meta name="color-scheme" content="light" />
+		<link rel="manifest" href="/site.webmanifest" />
 
-		<!-- DNS Prefetch and Preconnect for external resources -->
+		<!-- DNS Prefetch / Preconnect -->
 		<link rel="dns-prefetch" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-		<!-- Fonts with display=swap for better performance -->
+		<!-- Fonts -->
 		<link
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
 			rel="stylesheet"
 		/>
 
-		<!-- Google Analytics + Google Ads -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V1040V9ZS2"></script>
-		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag(){dataLayer.push(arguments);}
-			gtag('js', new Date());
-			gtag('config', 'G-V1040V9ZS2');
-			gtag('config', 'AW-979698901');
-		</script>
-
-		<!-- Favicon and app icons -->
+		<!-- Favicons -->
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<!-- TODO: Create custom PNG favicons for better compatibility -->
-		<!-- <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" /> -->
-		<!-- <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" /> -->
-		<!-- <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" /> -->
-		<!-- <link rel="manifest" href="/site.webmanifest" /> -->
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="shortcut icon" href="/favicon.ico" />
 
 		%sveltekit.head%
 	</head>

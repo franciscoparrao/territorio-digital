@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, SEO } from '$lib/components';
+	import { Button, SEO, BreadcrumbSchema } from '$lib/components';
 	import { categories } from '$lib/data/posts';
 	import type { PageData } from './$types';
 
@@ -29,6 +29,14 @@
 		author: post.author,
 		tags: post.tags
 	}}
+/>
+
+<BreadcrumbSchema
+	items={[
+		{ name: 'Inicio', url: 'https://territorio-digital.cl' },
+		{ name: 'Blog', url: 'https://territorio-digital.cl/blog' },
+		{ name: post.title, url: `https://territorio-digital.cl/blog/${post.slug}` }
+	]}
 />
 
 <svelte:head>

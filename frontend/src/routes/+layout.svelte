@@ -1,14 +1,11 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
-	import { Header, Footer } from '$lib/components';
+	import { Header, Footer, Analytics, CookieConsent } from '$lib/components';
 
 	let { children } = $props();
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
+<Analytics measurementId="G-V1040V9ZS2" googleAdsId="AW-979698901" />
 
 <div class="flex min-h-screen flex-col">
 	<Header />
@@ -17,3 +14,5 @@
 	</main>
 	<Footer />
 </div>
+
+<CookieConsent />
