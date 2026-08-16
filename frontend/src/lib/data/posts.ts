@@ -20,6 +20,18 @@ export type BlogCategory =
 
 export const posts: BlogPost[] = [
 	{
+		slug: 'monitoreo-aguas-subterraneas-satelital',
+		title: '¿Pueden los satélites monitorear las aguas subterráneas? Lo pusimos a prueba en Coquimbo',
+		excerpt:
+			'Validamos GRACE, ERA5-Land y MODIS contra 56 años de datos de 121 pozos DGA en nueve cuencas de la región de Coquimbo. Los resultados —publicados en Journal of Hydrology (Elsevier, Q1)— dicen algo incómodo sobre la megasequía.',
+		author: 'Francisco Parra',
+		date: '2026-08-16',
+		readingTime: 6,
+		category: 'investigacion',
+		tags: ['Hidrología', 'GRACE', 'Teledetección', 'Aguas Subterráneas', 'Coquimbo', 'Sequía', 'Google Earth Engine', 'Publicación Científica'],
+		featured: true
+	},
+	{
 		slug: 'surtgis-publicacion-ems',
 		title: 'SurtGIS fue aceptado en Environmental Modelling & Software (Elsevier, Q1)',
 		excerpt:

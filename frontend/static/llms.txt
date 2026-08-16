@@ -26,6 +26,7 @@ Territorio Digital integra capacidades de ingeniería de software con investigac
 
 ## Blog
 
+- [¿Pueden los satélites monitorear las aguas subterráneas? Lo pusimos a prueba en Coquimbo](https://territorio-digital.cl/blog/monitoreo-aguas-subterraneas-satelital) — Validación de GRACE, ERA5-Land y MODIS contra 121 pozos DGA (1970–2025) en 9 cuencas de Coquimbo. Hallazgo clave: la correlación GRACE–pozos colapsó durante la megasequía (r = −0.85 → −0.12). Publicado en Journal of Hydrology Q1 (2026-08-16).
 - [SurtGIS fue aceptado en Environmental Modelling & Software (Elsevier, Q1)](https://territorio-digital.cl/blog/surtgis-publicacion-ems) — Publicación en revista indexada Elsevier Q1. Benchmarks: GDAL 8.2× más lento, GRASS GIS 21.7× más lento (2026-08-15).
 - [SurtGIS Quickstart: Análisis de terreno de los Andes en 5 minutos](https://territorio-digital.cl/blog/surtgis-quickstart-analisis-terreno) — Tutorial práctico (2026-03-22).
 - [Cómo construir un chatbot con IA usando Go y React](https://territorio-digital.cl/blog/chatbot-ia-go-react) — Guía técnica (2024-11-15).
