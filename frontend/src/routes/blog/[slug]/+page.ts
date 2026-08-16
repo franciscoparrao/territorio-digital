@@ -1,17 +1,18 @@
-import { getPostBySlug } from '$lib/data/posts';
 import { error } from '@sveltejs/kit';
+import type { BlogPost } from '$lib/data/posts';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ params }) => {
-	const post = getPostBySlug(params.slug);
-
-	if (!post) {
-		throw error(404, 'Artículo no encontrado');
-	}
-
-	// Import the markdown file dynamically
+	// The .md frontmatter is the single source of truth for post metadata;
+	// the same dynamic import provides both content and metadata, so no
+	// client-side registry of all posts is needed.
 	try {
 		const module = await import(`./posts/${params.slug}.md`);
+
+		const post: BlogPost = {
+			slug: params.slug,
+			...(module.metadata as Omit<BlogPost, 'slug'>)
+		};
 
 		return {
 			post,

@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { Button, Card, Section, SEO } from '$lib/components';
-	import { posts, categories, type BlogCategory } from '$lib/data/posts';
+	import { categories, type BlogCategory } from '$lib/data/posts';
+
+	let { data } = $props();
 
 	let selectedCategory = $state<BlogCategory | 'all'>('all');
 
 	const filteredPosts = $derived(() => {
-		if (selectedCategory === 'all') return posts;
-		return posts.filter((p) => p.category === selectedCategory);
+		if (selectedCategory === 'all') return data.posts;
+		return data.posts.filter((p) => p.category === selectedCategory);
 	});
 
-	const featuredPosts = $derived(() => posts.filter((p) => p.featured));
+	const featuredPosts = $derived(() => data.posts.filter((p) => p.featured));
 
 	function formatDate(dateString: string): string {
 		const date = new Date(dateString);
@@ -218,7 +220,7 @@
 			¿Tienes una pregunta técnica?
 		</h2>
 		<p class="mt-4 text-lg text-secondary-700">
-			Si hay un tema específico que te gustaría que cubriera, contáctame.
+			Si hay un tema específico que te gustaría que cubriéramos, contáctanos.
 		</p>
 		<div class="mt-8">
 			<Button variant="primary" size="lg" href="/contacto">Enviar sugerencia</Button>
