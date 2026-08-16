@@ -5,6 +5,17 @@
 		email: string;
 		telephone: string;
 		url: string;
+		description?: string;
+		honorificSuffix?: string;
+		nationality?: string;
+		worksFor?: { name: string; url: string };
+		knowsAbout?: string[];
+		publication?: Array<{
+			name: string;
+			url: string;
+			publisherName: string;
+			journalName?: string;
+		}>;
 		sameAs?: string[];
 		alumniOf?: Array<{
 			name: string;
@@ -76,8 +87,28 @@
 				email: person.email,
 				telephone: person.telephone,
 				url: person.url,
+				...(person.description && { description: person.description }),
+				...(person.honorificSuffix && { honorificSuffix: person.honorificSuffix }),
+				...(person.nationality && { nationality: { '@type': 'Country', name: person.nationality } }),
+				...(person.worksFor && { worksFor: { '@type': 'Organization', name: person.worksFor.name, url: person.worksFor.url } }),
+				...(person.knowsAbout && { knowsAbout: person.knowsAbout }),
+				...(person.publication && {
+					publication: person.publication.map((p) => ({
+						'@type': 'ScholarlyArticle',
+						name: p.name,
+						url: p.url,
+						publisher: { '@type': 'Organization', name: p.publisherName },
+						...(p.journalName && { isPartOf: { '@type': 'Periodical', name: p.journalName } })
+					}))
+				}),
 				...(person.sameAs && { sameAs: person.sameAs }),
-				...(person.alumniOf && { alumniOf: person.alumniOf })
+				...(person.alumniOf && {
+					alumniOf: person.alumniOf.map((a) => ({
+						'@type': 'EducationalOrganization',
+						name: a.name,
+						url: a.url
+					}))
+				})
 			}
 		: null;
 </script>

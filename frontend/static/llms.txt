@@ -15,7 +15,7 @@ Territorio Digital integra capacidades de ingeniería de software con investigac
 ## Portfolio (proyectos destacados)
 
 - [MCP Gateway](https://territorio-digital.cl/portfolio/mcp-gateway): Orquestador GIS con IA que integra 1.100+ herramientas de OTB, QGIS, GRASS, SAGA, Planetary Computer bajo el protocolo MCP.
-- [SurtGIS](https://territorio-digital.cl/portfolio/surtgis): Plataforma GIS de alto rendimiento para análisis de terreno (Rust).
+- [SurtGIS](https://territorio-digital.cl/portfolio/surtgis): Motor de análisis geoespacial en Rust con 105 algoritmos. 8.2× más rápido que GDAL, 21.7× más rápido que GRASS GIS. Publicado en *Environmental Modelling & Software* (Elsevier, Q1, JIF ~4.9). DOI: https://doi.org/10.1016/j.envsoft.2026.107102
 - [Chatbot Admisión USACH](https://territorio-digital.cl/portfolio/chatbot-admision-usach): Asistente conversacional institucional para postulantes.
 - [CRM Clínicas](https://territorio-digital.cl/portfolio/crm-clinicas): SaaS de gestión clínica multi-tenant.
 - [AgroWatch](https://territorio-digital.cl/portfolio/agrowatch): Observatorio agroclimático con datos satelitales.
@@ -26,17 +26,19 @@ Territorio Digital integra capacidades de ingeniería de software con investigac
 
 ## Blog
 
+- [SurtGIS fue aceptado en Environmental Modelling & Software (Elsevier, Q1)](https://territorio-digital.cl/blog/surtgis-publicacion-ems) — Publicación en revista indexada Elsevier Q1. Benchmarks: GDAL 8.2× más lento, GRASS GIS 21.7× más lento (2026-08-15).
 - [SurtGIS Quickstart: Análisis de terreno de los Andes en 5 minutos](https://territorio-digital.cl/blog/surtgis-quickstart-analisis-terreno) — Tutorial práctico (2026-03-22).
 - [Cómo construir un chatbot con IA usando Go y React](https://territorio-digital.cl/blog/chatbot-ia-go-react) — Guía técnica (2024-11-15).
 - [Ver todos los artículos](https://territorio-digital.cl/blog)
 
 ## Publicaciones académicas
 
-- [Publicaciones del fundador](https://territorio-digital.cl/publicaciones): Papers indexados (RSASE, ISPRS y otros) en teledetección, susceptibilidad multi-amenaza, y machine learning aplicado a geociencias.
+- **SurtGIS** — Francisco Parra. *Environmental Modelling & Software* (Elsevier, Q1, JIF ~4.9), 2026. DOI: https://doi.org/10.1016/j.envsoft.2026.107102 — Motor GIS de alto rendimiento en Rust: 105 algoritmos, 8.2× más rápido que GDAL, 21.7× más rápido que GRASS GIS.
+- [Ver todas las publicaciones](https://territorio-digital.cl/publicaciones): Papers indexados (RSASE, ISPRS y otros) en teledetección, susceptibilidad multi-amenaza, y machine learning aplicado a geociencias.
 
 ## Sobre el equipo
 
-- [About — Francisco Parra](https://territorio-digital.cl/about): Geólogo (U. de Chile) + Doctor en Informática (USACH). Investigador asociado UOH/USACH/CITIAPS.
+- [About — Francisco Parra](https://territorio-digital.cl/about): Geólogo (Universidad de Chile) + Doctor en Ciencias de la Ingeniería mención Informática (USACH). Fundador de Territorio Digital. Especialista en análisis geoespacial, Machine Learning y desarrollo de software de alto rendimiento. Autor de SurtGIS (Environmental Modelling & Software, 2026). Investigador asociado USACH/UOH/CITIAPS. Profesor de cátedra USACH.
 
 ## Contacto
 

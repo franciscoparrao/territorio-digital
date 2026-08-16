@@ -131,9 +131,28 @@
 	person={{
 		name: 'Francisco José Parra Ortiz',
 		jobTitle: 'Doctor en Ciencias de la Ingeniería mención Informática',
-		email: 'francisco.parra.o@usach.cl',
+		email: 'contacto@territorio-digital.cl',
 		telephone: '+56956826682',
-		url: 'https://territorio-digital.cl',
+		url: 'https://territorio-digital.cl/about',
+		description: 'Geólogo (Universidad de Chile) y Doctor en Ciencias de la Ingeniería mención Informática (USACH). Fundador de Territorio Digital. Especialista en análisis geoespacial, Machine Learning y desarrollo de software de alto rendimiento en Rust. Autor de SurtGIS, publicado en Environmental Modelling & Software (Elsevier, Q1). Investigador asociado USACH/UOH/CITIAPS. Profesor de cátedra en USACH.',
+		honorificSuffix: 'PhD',
+		nationality: 'Chile',
+		worksFor: { name: 'Territorio Digital', url: 'https://territorio-digital.cl' },
+		knowsAbout: [
+			'Desarrollo Web', 'SvelteKit', 'Rust', 'Go', 'Python',
+			'GIS', 'Análisis Geoespacial', 'GDAL', 'QGIS', 'Google Earth Engine',
+			'Machine Learning', 'Deep Learning', 'Data Science', 'Teledetección',
+			'Hidrología', 'Modelamiento de Desastres Naturales', 'Evaluación de Impacto Ambiental',
+			'WebAssembly', 'Docker', 'PostgreSQL', 'MongoDB'
+		],
+		publication: [
+			{
+				name: 'SurtGIS: A High-Performance Geospatial Analysis Platform in Rust',
+				url: 'https://doi.org/10.1016/j.envsoft.2026.107102',
+				publisherName: 'Elsevier',
+				journalName: 'Environmental Modelling & Software'
+			}
+		],
 		sameAs: ['https://www.linkedin.com/in/franciscojoseparraortiz'],
 		alumniOf: [
 			{

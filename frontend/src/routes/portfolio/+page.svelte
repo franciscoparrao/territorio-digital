@@ -106,7 +106,7 @@
 </Section>
 
 <!-- Projects Grid -->
-<Section background="secondary" padding="lg">
+<Section background="gray" padding="lg">
 	<div class="mx-auto max-w-6xl">
 		{#if filteredProjects().length === 0}
 			<div class="text-center py-12">
