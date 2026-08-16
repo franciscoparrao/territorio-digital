@@ -5,17 +5,17 @@
 		{
 			question: '¿Cómo funciona una sesión de asesoría técnica?',
 			answer:
-				'Empieza con una llamada de diagnóstico gratuita (30 min) donde me cuentas el problema. Si tiene sentido avanzar, hacemos una sesión de trabajo de 2 horas donde revisamos el código, la arquitectura o los logs en detalle y definimos las acciones concretas. Al final de la sesión recibes un informe escrito con los hallazgos y las recomendaciones priorizadas. No hay compromiso de implementación incluido en la asesoría — si quieres que lo implemente yo, se cotiza aparte.'
+				'Empieza con una llamada de diagnóstico gratuita (30 min) donde nos cuentas el problema. Si tiene sentido avanzar, hacemos una sesión de trabajo de 2 horas donde revisamos el código, la arquitectura o los logs en detalle y definimos las acciones concretas. Al final de la sesión recibes un informe escrito con los hallazgos y las recomendaciones priorizadas. No hay compromiso de implementación incluido en la asesoría — si quieres que la implementemos nosotros, se cotiza aparte.'
 		},
 		{
 			question: '¿Pueden revisar código en cualquier lenguaje?',
 			answer:
-				'Con profundidad: Rust, Python, Go, TypeScript/JavaScript, SQL. Con conocimiento general: Java, C, C++, R, Julia. Para frameworks y librerías específicas (SvelteKit, React, Axum, FastAPI, Django, etc.), normalmente tengo experiencia directa. Si el lenguaje o framework es muy específico y no lo manejo, te lo digo antes de cobrar — no tiene sentido hacer un review superficial.'
+				'Con profundidad: Rust, Python, Go, TypeScript/JavaScript, SQL. Con conocimiento general: Java, C, C++, R, Julia. Para frameworks y librerías específicas (SvelteKit, React, Axum, FastAPI, Django, etc.), normalmente tenemos experiencia directa. Si el lenguaje o framework es muy específico y no lo manejamos, te lo decimos antes de cobrar — no tiene sentido hacer un review superficial.'
 		},
 		{
 			question: '¿La asesoría incluye la implementación de los cambios?',
 			answer:
-				'No por defecto — la asesoría es diagnóstico y recomendaciones. Si además quieres que yo implemente los cambios, se cotiza como proyecto de desarrollo separado. Esta separación existe porque muchos clientes tienen su propio equipo de desarrollo que puede implementar las recomendaciones; pagar por la implementación cuando no la necesitan sería ineficiente.'
+				'No por defecto — la asesoría es diagnóstico y recomendaciones. Si además quieres que implementemos los cambios, se cotiza como proyecto de desarrollo separado. Esta separación existe porque muchos clientes tienen su propio equipo de desarrollo que puede implementar las recomendaciones; pagar por la implementación cuando no la necesitan sería ineficiente.'
 		},
 		{
 			question: '¿Cuántas horas de consultoría necesito para ver resultados?',
@@ -25,7 +25,7 @@
 		{
 			question: '¿Trabajan bajo NDA?',
 			answer:
-				'Sí, siempre. Antes de ver cualquier código, arquitectura o dato confidencial, firmamos un acuerdo de confidencialidad. Si tu empresa tiene su propio NDA estándar, puedo revisarlo y firmarlo. Si prefieres usar el mío, tengo uno simple de 2 páginas para proyectos de asesoría.'
+				'Sí, siempre. Antes de ver cualquier código, arquitectura o dato confidencial, firmamos un acuerdo de confidencialidad. Si tu empresa tiene su propio NDA estándar, lo revisamos y firmamos. Si prefieres usar el nuestro, tenemos uno simple de 2 páginas para proyectos de asesoría.'
 		},
 		{
 			question: '¿Para qué sirve la mentoría técnica y a quién va dirigida?',
@@ -156,7 +156,7 @@
 		</div>
 
 		<div class="mt-10">
-			<h3 class="text-lg font-semibold text-secondary-900">Lenguajes y frameworks con los que trabajo</h3>
+			<h3 class="text-lg font-semibold text-secondary-900">Lenguajes y frameworks con los que trabajamos</h3>
 			<div class="mt-4 flex flex-wrap gap-2">
 				{#each ['Rust', 'Python', 'Go', 'TypeScript', 'SQL', 'SvelteKit', 'React', 'Axum', 'FastAPI', 'Docker', 'PostgreSQL', 'MongoDB'] as tech (tech)}
 					<span class="rounded-full bg-primary-100 px-4 py-2 text-sm font-medium text-primary-700">{tech}</span>
@@ -233,8 +233,8 @@
 	<div class="mx-auto max-w-3xl text-center">
 		<h2 class="text-3xl font-bold text-secondary-900">¿Tienes un problema técnico que no logras resolver?</h2>
 		<p class="mt-4 text-lg text-secondary-700">
-			La primera llamada de diagnóstico es gratuita y sin compromiso. Cuéntame el problema y te
-			digo si puedo ayudarte — y cómo.
+			La primera llamada de diagnóstico es gratuita y sin compromiso. Cuéntanos el problema y te
+			decimos si podemos ayudarte — y cómo.
 		</p>
 		<div class="mt-8 flex flex-wrap justify-center gap-4">
 			<Button variant="primary" size="lg" href="/contacto">Agendar llamada gratuita</Button>
