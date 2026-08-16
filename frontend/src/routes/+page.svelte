@@ -128,6 +128,86 @@
 	</div>
 </Section>
 
+<!-- Proceso de trabajo -->
+<Section background="gray" padding="lg">
+	<div class="mx-auto max-w-5xl">
+		<div class="text-center">
+			<h2 class="text-3xl font-bold text-secondary-900 sm:text-4xl">Cómo trabajamos</h2>
+			<p class="mt-4 text-lg text-secondary-600">
+				Sin intermediarios, sin sorpresas. Francisco trabaja directamente contigo en cada etapa.
+			</p>
+		</div>
+
+		<div class="mt-14 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+			<div class="relative">
+				<div class="flex items-start gap-4">
+					<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">1</div>
+					<div>
+						<h3 class="font-semibold text-secondary-900">Llamada de diagnóstico</h3>
+						<p class="mt-2 text-sm text-secondary-600">30 minutos gratuitos para entender tu problema, revisar si tengo el expertise adecuado y darte una primera orientación. Sin compromiso.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="relative">
+				<div class="flex items-start gap-4">
+					<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">2</div>
+					<div>
+						<h3 class="font-semibold text-secondary-900">Propuesta técnica</h3>
+						<p class="mt-2 text-sm text-secondary-600">En 48–72 horas recibes una propuesta con el alcance exacto del proyecto, plazos realistas y precio fijo. Sin letra chica ni costos variables.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="relative">
+				<div class="flex items-start gap-4">
+					<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">3</div>
+					<div>
+						<h3 class="font-semibold text-secondary-900">Kick-off</h3>
+						<p class="mt-2 text-sm text-secondary-600">Reunión de inicio para alinear prioridades, definir canales de comunicación y acceso a lo que necesito (repositorio, datos, sistemas). El proyecto arranca esa semana.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="relative">
+				<div class="flex items-start gap-4">
+					<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">4</div>
+					<div>
+						<h3 class="font-semibold text-secondary-900">Desarrollo con actualizaciones semanales</h3>
+						<p class="mt-2 text-sm text-secondary-600">Avances cada semana: qué se hizo, qué viene, si hay algo que aclarar. Puedes ver el progreso en el repositorio en tiempo real. Sin silencio de semanas.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="relative">
+				<div class="flex items-start gap-4">
+					<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">5</div>
+					<div>
+						<h3 class="font-semibold text-secondary-900">Entrega y traspaso</h3>
+						<p class="mt-2 text-sm text-secondary-600">Entrego el código documentado, el sistema desplegado y funcionando, y una sesión de traspaso donde tu equipo aprende a operar lo que construimos juntos.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="relative">
+				<div class="flex items-start gap-4">
+					<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white">6</div>
+					<div>
+						<h3 class="font-semibold text-secondary-900">90 días de garantía</h3>
+						<p class="mt-2 text-sm text-secondary-600">Cualquier bug en lo entregado se corrige sin costo durante 90 días. Después, las mejoras y cambios se cotizan a $35.000 CLP/hora o con retainer mensual.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="mt-12 rounded-xl border border-primary-200 bg-primary-50 p-6 text-center">
+			<p class="text-secondary-700">
+				<strong>¿Qué necesito de tu parte para empezar?</strong> Solo tu tiempo en la primera llamada y acceso a los datos o sistemas relevantes después de firmar. El resto lo manejo yo.
+			</p>
+		</div>
+	</div>
+</Section>
+
 <!-- CTA Section -->
 <Section background="primary" padding="lg">
 	<div class="mx-auto max-w-3xl text-center">
