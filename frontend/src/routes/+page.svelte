@@ -134,7 +134,7 @@
 		<div class="text-center">
 			<h2 class="text-3xl font-bold text-secondary-900 sm:text-4xl">Cómo trabajamos</h2>
 			<p class="mt-4 text-lg text-secondary-600">
-				Sin intermediarios, sin sorpresas. Francisco trabaja directamente contigo en cada etapa.
+				Sin intermediarios ni sorpresas. Trabajamos directamente contigo en cada etapa del proyecto.
 			</p>
 		</div>
 
@@ -202,7 +202,7 @@
 
 		<div class="mt-12 rounded-xl border border-primary-200 bg-primary-50 p-6 text-center">
 			<p class="text-secondary-700">
-				<strong>¿Qué necesito de tu parte para empezar?</strong> Solo tu tiempo en la primera llamada y acceso a los datos o sistemas relevantes después de firmar. El resto lo manejo yo.
+				<strong>¿Qué necesitas de tu parte para empezar?</strong> Solo tu tiempo en la primera llamada y acceso a los datos o sistemas relevantes después de firmar. El resto lo manejamos nosotros.
 			</p>
 		</div>
 	</div>
