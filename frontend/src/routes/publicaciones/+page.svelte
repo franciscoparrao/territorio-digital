@@ -1,6 +1,102 @@
 <script lang="ts">
 	import { Button, Card, Section, SEO, BreadcrumbSchema } from '$lib/components';
+
+	const otherPapers = [
+		{
+			title: 'SurtGIS: A High-Performance Raster Geospatial Analysis Library in Rust with WebAssembly and Python Support',
+			authors: 'Parra, F.',
+			journal: 'Environmental Modelling & Software',
+			publisher: 'Elsevier',
+			year: 2026,
+			volume: '204, 107102',
+			quartile: 'Q1',
+			doi: 'https://doi.org/10.1016/j.envsoft.2026.107102',
+			tags: ['Rust', 'GIS', 'WebAssembly', 'High Performance'],
+			summary: 'Motor de análisis raster geoespacial nativo en Rust con 105 algoritmos. 8.2× más rápido que GDAL, 21.7× más rápido que GRASS GIS. Soporte para WebAssembly y Python (PyO3).',
+			status: 'Publicado'
+		},
+		{
+			title: 'Validation of GRACE, ERA5-Land and MODIS remote sensing products for groundwater monitoring in semiarid regions: A multi-basin study in Chile\'s Coquimbo region',
+			authors: 'Parra, F.; Rubilar, J. F.',
+			journal: 'Journal of Hydrology',
+			publisher: 'Elsevier',
+			year: 2026,
+			volume: '136157',
+			quartile: 'Q1',
+			doi: 'https://doi.org/10.1016/j.jhydrol.2026.136157',
+			tags: ['GRACE', 'ERA5', 'MODIS', 'Hidrología', 'Zonas Semiáridas'],
+			summary: 'Evaluación de productos de teledetección satelital para monitoreo de aguas subterráneas en cuencas semiáridas de la región de Coquimbo, Chile.',
+			status: 'En prensa'
+		},
+		{
+			title: 'Modeling and Evaluation of the Susceptibility to Landslide Events Using Machine Learning Algorithms in the Province of Chañaral, Atacama Region, Chile',
+			authors: 'Parra, F.; González, J.; Chacón, M.; Marín, M.',
+			journal: 'Sustainability',
+			publisher: 'MDPI',
+			year: 2023,
+			volume: '15(24), 16806',
+			quartile: 'Q2',
+			doi: 'https://doi.org/10.3390/su152416806',
+			tags: ['Remociones en Masa', 'Machine Learning', 'Atacama', 'Susceptibilidad'],
+			summary: 'Modelamiento de susceptibilidad a remociones en masa en la Provincia de Chañaral mediante algoritmos de aprendizaje automático, con validación espacial cruzada.',
+			status: 'Publicado'
+		}
+	];
+
+	const scholarlySchema = {
+		'@context': 'https://schema.org',
+		'@graph': [
+			{
+				'@type': 'ScholarlyArticle',
+				name: 'Unsupervised volcanic change detection using deep learning embeddings: Case studies of Nevados de Chillán and Llaima volcanoes, Chile (2017–2023)',
+				author: { '@type': 'Person', name: 'Francisco Parra', url: 'https://territorio-digital.cl/about' },
+				url: 'https://doi.org/10.1016/j.rsase.2026.101959',
+				datePublished: '2026',
+				publisher: { '@type': 'Organization', name: 'Elsevier' },
+				isPartOf: { '@type': 'Periodical', name: 'Remote Sensing Applications: Society and Environment' }
+			},
+			{
+				'@type': 'ScholarlyArticle',
+				name: 'SurtGIS: A High-Performance Raster Geospatial Analysis Library in Rust with WebAssembly and Python Support',
+				author: { '@type': 'Person', name: 'Francisco Parra', url: 'https://territorio-digital.cl/about' },
+				url: 'https://doi.org/10.1016/j.envsoft.2026.107102',
+				datePublished: '2026',
+				publisher: { '@type': 'Organization', name: 'Elsevier' },
+				isPartOf: { '@type': 'Periodical', name: 'Environmental Modelling & Software' }
+			},
+			{
+				'@type': 'ScholarlyArticle',
+				name: 'Validation of GRACE, ERA5-Land and MODIS remote sensing products for groundwater monitoring in semiarid regions: A multi-basin study in Chile\'s Coquimbo region',
+				author: [
+					{ '@type': 'Person', name: 'Francisco Parra', url: 'https://territorio-digital.cl/about' },
+					{ '@type': 'Person', name: 'J. F. Rubilar' }
+				],
+				url: 'https://doi.org/10.1016/j.jhydrol.2026.136157',
+				datePublished: '2026',
+				publisher: { '@type': 'Organization', name: 'Elsevier' },
+				isPartOf: { '@type': 'Periodical', name: 'Journal of Hydrology' }
+			},
+			{
+				'@type': 'ScholarlyArticle',
+				name: 'Modeling and Evaluation of the Susceptibility to Landslide Events Using Machine Learning Algorithms in the Province of Chañaral, Atacama Region, Chile',
+				author: [
+					{ '@type': 'Person', name: 'Francisco Parra', url: 'https://territorio-digital.cl/about' },
+					{ '@type': 'Person', name: 'J. González' },
+					{ '@type': 'Person', name: 'M. Chacón' },
+					{ '@type': 'Person', name: 'M. Marín' }
+				],
+				url: 'https://doi.org/10.3390/su152416806',
+				datePublished: '2023',
+				publisher: { '@type': 'Organization', name: 'MDPI' },
+				isPartOf: { '@type': 'Periodical', name: 'Sustainability' }
+			}
+		]
+	};
 </script>
+
+<svelte:head>
+	{@html `<script type="application/ld+json">${JSON.stringify(scholarlySchema)}</script>`}
+</svelte:head>
 
 <SEO
 	title="Publicaciones Científicas - Francisco Parra"
@@ -333,6 +429,41 @@
 					https://doi.org/10.1016/j.rsase.2026.101959
 				</p>
 			</div>
+		</div>
+	</div>
+</Section>
+
+<!-- More Publications -->
+<Section background="gray" padding="lg">
+	<div class="mx-auto max-w-5xl">
+		<h2 class="text-2xl font-bold text-secondary-900">Más publicaciones</h2>
+		<p class="mt-2 text-secondary-600">Otros artículos publicados en revistas internacionales con revisión por pares.</p>
+		<div class="mt-8 space-y-6">
+			{#each otherPapers as paper (paper.doi)}
+				<div class="rounded-xl border border-secondary-200 bg-white p-6">
+					<div class="flex flex-wrap items-center gap-2">
+						<span class="rounded-full bg-primary-100 px-3 py-1 text-xs font-medium text-primary-800">{paper.journal}</span>
+						<span class="rounded-full bg-secondary-100 px-3 py-1 text-xs font-medium text-secondary-700">{paper.quartile} · {paper.year}</span>
+						{#if paper.status === 'En prensa'}
+							<span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">En prensa</span>
+						{/if}
+					</div>
+					<h3 class="mt-3 text-lg font-semibold leading-snug text-secondary-900">{paper.title}</h3>
+					<p class="mt-1 text-sm text-secondary-500">{paper.authors} · {paper.publisher}, {paper.volume}</p>
+					<p class="mt-3 text-sm text-secondary-600">{paper.summary}</p>
+					<div class="mt-4 flex flex-wrap items-center gap-4">
+						<a href={paper.doi} target="_blank" rel="noopener noreferrer"
+							class="text-sm font-medium text-primary-600 hover:text-primary-800 hover:underline">
+							DOI → {paper.doi.replace('https://doi.org/', '')}
+						</a>
+						<div class="flex flex-wrap gap-2">
+							{#each paper.tags as tag (tag)}
+								<span class="rounded bg-secondary-100 px-2 py-0.5 text-xs text-secondary-600">{tag}</span>
+							{/each}
+						</div>
+					</div>
+				</div>
+			{/each}
 		</div>
 	</div>
 </Section>

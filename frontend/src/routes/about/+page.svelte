@@ -134,7 +134,7 @@
 		email: 'contacto@territorio-digital.cl',
 		telephone: '+56956826682',
 		url: 'https://territorio-digital.cl/about',
-		description: 'Geólogo (Universidad de Chile) y Doctor en Ciencias de la Ingeniería mención Informática (USACH). Fundador de Territorio Digital. Especialista en análisis geoespacial, Machine Learning y desarrollo de software de alto rendimiento en Rust. Autor de SurtGIS, publicado en Environmental Modelling & Software (Elsevier, Q1). Investigador asociado USACH/UOH/CITIAPS. Profesor de cátedra en USACH.',
+		description: 'Geólogo (Universidad de Chile) y Doctor en Ciencias de la Ingeniería mención Informática (USACH). Investigador Postdoctoral DICYT en USACH (2026–2027). Fundador de Territorio Digital. Especialista en análisis geoespacial, Machine Learning y software de alto rendimiento en Rust. Tres artículos Q1 publicados en 2026: Environmental Modelling & Software, Journal of Hydrology y Remote Sensing Applications (todos Elsevier). Autor de SurtGIS, motor GIS en Rust 8× más rápido que GDAL. Profesor de cátedra USACH.',
 		honorificSuffix: 'PhD',
 		nationality: 'Chile',
 		worksFor: { name: 'Territorio Digital', url: 'https://territorio-digital.cl' },
@@ -143,17 +143,34 @@
 			'GIS', 'Análisis Geoespacial', 'GDAL', 'QGIS', 'Google Earth Engine',
 			'Machine Learning', 'Deep Learning', 'Data Science', 'Teledetección',
 			'Hidrología', 'Modelamiento de Desastres Naturales', 'Evaluación de Impacto Ambiental',
+			'SAR', 'InSAR', 'Susceptibilidad a Remociones en Masa', 'Geomorfología',
 			'WebAssembly', 'Docker', 'PostgreSQL', 'MongoDB'
 		],
 		publication: [
 			{
-				name: 'SurtGIS: A High-Performance Geospatial Analysis Platform in Rust',
+				name: 'SurtGIS: A High-Performance Raster Geospatial Analysis Library in Rust with WebAssembly and Python Support',
 				url: 'https://doi.org/10.1016/j.envsoft.2026.107102',
 				publisherName: 'Elsevier',
 				journalName: 'Environmental Modelling & Software'
+			},
+			{
+				name: 'Validation of GRACE, ERA5-Land and MODIS remote sensing products for groundwater monitoring in semiarid regions: A multi-basin study in Chile\'s Coquimbo region',
+				url: 'https://doi.org/10.1016/j.jhydrol.2026.136157',
+				publisherName: 'Elsevier',
+				journalName: 'Journal of Hydrology'
+			},
+			{
+				name: 'Unsupervised volcanic change detection using deep learning embeddings: Case studies of Nevados de Chillán and Llaima volcanoes, Chile (2017–2023)',
+				url: 'https://doi.org/10.1016/j.rsase.2026.101959',
+				publisherName: 'Elsevier',
+				journalName: 'Remote Sensing Applications: Society and Environment'
 			}
 		],
-		sameAs: ['https://www.linkedin.com/in/franciscojoseparraortiz'],
+		sameAs: [
+			'https://www.linkedin.com/in/franciscojoseparraortiz',
+			'https://orcid.org/0009-0006-0435-1854',
+			'https://scholar.google.com/citations?user=wiO9wcsAAAAJ'
+		],
 		alumniOf: [
 			{
 				name: 'Universidad de Santiago de Chile',
@@ -388,17 +405,21 @@
 			<p class="mt-2 text-secondary-600">
 				Nuestro equipo está liderado por <strong>Francisco José Parra Ortiz</strong>, Doctor en
 				Ciencias de la Ingeniería mención Informática y Magíster en Informática (Universidad de
-				Santiago). Geólogo titulado con Minor en Física Cuántica (Universidad de Chile),
-				especializado en ciencia de datos, Machine Learning, análisis geoespacial y desarrollo de
-				software.
+				Santiago). Geólogo titulado con Minor en Física Cuántica (Universidad de Chile).
+				Actualmente <strong>Investigador Postdoctoral DICYT en USACH (2026–2027)</strong> sobre plataformas
+				integradas de predicción de remociones en masa con IA.
 			</p>
 			<p class="mt-2 text-secondary-600">
-				Con más de 15 años de experiencia combinada, Francisco ha liderado proyectos que van desde
-				sistemas de detección de desastres naturales usando Deep Learning, hasta evaluaciones de
-				impacto ambiental y desarrollo de aplicaciones web. Profesor de cátedra en la Universidad de
-				Santiago (Innovación y Emprendimiento, Geoinformática) y autor de publicaciones científicas
-				en journals internacionales. Ha participado en proyectos FONDAP-CONICYT, FONDEF IDeA, y
-				consultorías especializadas en modelamiento geológico, hidrogeológico y análisis satelital.
+				Autor de tres artículos Q1 publicados en 2026 en revistas Elsevier: <em>Environmental Modelling &
+				Software</em> (SurtGIS), <em>Journal of Hydrology</em> (monitoreo de aguas subterráneas en
+				zonas semiáridas) y <em>Remote Sensing Applications</em> (detección de cambios volcánicos
+				con deep learning). Múltiples manuscritos en revisión en <em>Information Sciences</em>,
+				<em>Natural Hazards</em> y <em>Journal of Machine Learning Research</em>.
+			</p>
+			<p class="mt-2 text-secondary-600">
+				Profesor de cátedra en USACH (Innovación y Emprendimiento, Geoinformática, Gestión de I+D).
+				Ha participado en proyectos FONDAP-CONICYT, FONDEF IDeA, y consultorías en modelamiento
+				geológico, hidrogeológico y análisis satelital.
 			</p>
 		</div>
 	</div>

@@ -31,14 +31,20 @@ Territorio Digital integra capacidades de ingeniería de software con investigac
 - [Cómo construir un chatbot con IA usando Go y React](https://territorio-digital.cl/blog/chatbot-ia-go-react) — Guía técnica (2024-11-15).
 - [Ver todos los artículos](https://territorio-digital.cl/blog)
 
-## Publicaciones académicas
+## Publicaciones académicas (artículos publicados o en prensa)
 
-- **SurtGIS** — Francisco Parra. *Environmental Modelling & Software* (Elsevier, Q1, JIF ~4.9), 2026. DOI: https://doi.org/10.1016/j.envsoft.2026.107102 — Motor GIS de alto rendimiento en Rust: 105 algoritmos, 8.2× más rápido que GDAL, 21.7× más rápido que GRASS GIS.
-- [Ver todas las publicaciones](https://territorio-digital.cl/publicaciones): Papers indexados (RSASE, ISPRS y otros) en teledetección, susceptibilidad multi-amenaza, y machine learning aplicado a geociencias.
+- **SurtGIS** — Parra, F. (2026). *Environmental Modelling & Software* (Elsevier, Q1, JIF ~4.9), 204, 107102. DOI: https://doi.org/10.1016/j.envsoft.2026.107102 — Motor GIS de alto rendimiento en Rust: 105 algoritmos, 8.2× más rápido que GDAL, 21.7× más rápido que GRASS GIS.
+- **Groundwater monitoring semiarid Chile** — Parra, F.; Rubilar, J. F. (2026). *Journal of Hydrology* (Elsevier, Q1), 136157. En prensa. DOI: https://doi.org/10.1016/j.jhydrol.2026.136157 — Validación de GRACE, ERA5-Land y MODIS para monitoreo de aguas subterráneas en cuencas semiáridas de la región de Coquimbo.
+- **Volcanic change detection** — Parra, F. (2026). *Remote Sensing Applications: Society and Environment* (Elsevier), 101959. DOI: https://doi.org/10.1016/j.rsase.2026.101959 — Detección no supervisada de cambios volcánicos en Nevados de Chillán y Llaima (2017–2023) usando embeddings de deep learning.
+- **Landslide susceptibility Chañaral** — Parra, F. et al. (2023). *Sustainability* (MDPI), 15(24), 16806. DOI: https://doi.org/10.3390/su152416806 — Susceptibilidad a remociones en masa en la Provincia de Chañaral, Atacama, con ML.
+- [Ver todas las publicaciones](https://territorio-digital.cl/publicaciones)
 
 ## Sobre el equipo
 
-- [About — Francisco Parra](https://territorio-digital.cl/about): Geólogo (Universidad de Chile) + Doctor en Ciencias de la Ingeniería mención Informática (USACH). Fundador de Territorio Digital. Especialista en análisis geoespacial, Machine Learning y desarrollo de software de alto rendimiento. Autor de SurtGIS (Environmental Modelling & Software, 2026). Investigador asociado USACH/UOH/CITIAPS. Profesor de cátedra USACH.
+- [About — Francisco Parra](https://territorio-digital.cl/about): Geólogo (Universidad de Chile) + Doctor en Ciencias de la Ingeniería mención Informática (USACH). Investigador Postdoctoral DICYT en USACH (2026–2027). Fundador de Territorio Digital. Especialista en análisis geoespacial, Machine Learning y desarrollo de software de alto rendimiento en Rust. Tres artículos Q1 en 2026 (EMS, Journal of Hydrology, RSASE). Profesor de cátedra USACH (Innovación y Emprendimiento, Geoinformática, Gestión I+D).
+  - ORCID: https://orcid.org/0009-0006-0435-1854
+  - Google Scholar: https://scholar.google.com/citations?user=wiO9wcsAAAAJ
+  - LinkedIn: https://www.linkedin.com/in/franciscojoseparraortiz
 
 ## Contacto
 
