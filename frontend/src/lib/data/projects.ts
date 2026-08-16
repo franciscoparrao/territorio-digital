@@ -57,26 +57,28 @@ export const projects: Project[] = [
 		id: 'surtgis',
 		title: 'SurtGIS — Plataforma GIS de Alto Rendimiento',
 		shortDescription:
-			'Motor de análisis geoespacial en Rust con 105 algoritmos, GUI desktop, WebAssembly y bindings Python. 2-20x más rápido que GDAL/SAGA.',
+			'Motor de análisis geoespacial en Rust con 105 algoritmos, GUI desktop, WebAssembly y bindings Python. 2-20x más rápido que GDAL/SAGA. Publicado en Environmental Modelling & Software (Elsevier, Q1).',
 		fullDescription:
-			'Plataforma GIS completa escrita desde cero en Rust sin dependencia de GDAL. Incluye 105 algoritmos en 9 categorías (terreno, hidrología, imágenes, clasificación), con deployment multiplataforma: CLI, GUI desktop (egui), WebAssembly para navegador y bindings Python vía PyO3.',
+			'Plataforma GIS completa escrita desde cero en Rust sin dependencia de GDAL. Incluye 105 algoritmos en 9 categorías (terreno, hidrología, imágenes, clasificación), con deployment multiplataforma: CLI, GUI desktop (egui), WebAssembly para navegador y bindings Python vía PyO3. Publicado en Environmental Modelling & Software (Elsevier), revista Q1 en modelación ambiental y ciencias de la computación.',
 		category: 'geoespacial',
-		tags: ['GIS', 'Rust', 'Alto Rendimiento', 'WebAssembly', 'Open Source'],
+		tags: ['GIS', 'Rust', 'Alto Rendimiento', 'WebAssembly', 'Open Source', 'Publicación Científica'],
 		technologies: ['Rust', 'egui', 'WebAssembly', 'PyO3', 'STAC', 'COG', 'Rayon'],
-		year: 2025,
+		year: 2026,
 		featured: true,
+		liveUrl: 'https://doi.org/10.1016/j.envsoft.2026.107102',
 		highlights: [
+			'📄 Publicado en Environmental Modelling & Software (Elsevier, Q1, JIF ~4.9)',
 			'105 algoritmos en 9 categorías',
-			'2-20x más rápido que GDAL, SAGA y WhiteboxTools',
-			'Sin dependencia de GDAL — implementación nativa',
+			'8.2x más rápido que GDAL, 21.7x más rápido que GRASS GIS',
+			'Sin dependencia de GDAL — implementación nativa en Rust',
 			'GUI desktop estilo SAGA con visor 3D',
-			'33 algoritmos disponibles en WebAssembly',
+			'33 algoritmos disponibles en WebAssembly (único en su clase)',
 			'Soporte nativo para datos cloud (STAC/COG)'
 		],
 		metrics: [
 			{ label: 'Algoritmos', value: '105' },
-			{ label: 'Speedup', value: '2-20x' },
-			{ label: 'Plataformas', value: '5' }
+			{ label: 'vs GDAL', value: '8.2x' },
+			{ label: 'vs GRASS', value: '21.7x' }
 		]
 	},
 	{

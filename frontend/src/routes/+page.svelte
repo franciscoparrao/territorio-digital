@@ -3,8 +3,8 @@
 </script>
 
 <SEO
-	title="Territorio Digital - Desarrollo Web, Data Science y Análisis Satelital en Chile"
-	description="Expertos en desarrollo web moderno, data science, machine learning y análisis geoespacial. Transformamos datos en decisiones estratégicas para impulsar tu negocio en Chile."
+	title="Territorio Digital - Desarrollo Web e Inteligencia Geoespacial en Chile"
+	description="Desarrollo web de alto rendimiento, data science e inteligencia geoespacial para organizaciones en Chile. Sistemas a medida con tecnología moderna y análisis de datos satelitales."
 	url="https://territorio-digital.cl"
 	type="website"
 />
@@ -33,11 +33,11 @@
 <Section background="gradient" padding="xl">
 	<div class="mx-auto max-w-4xl text-center">
 		<h1 class="text-4xl font-bold tracking-tight text-secondary-900 sm:text-5xl lg:text-6xl">
-			Transformamos datos en <span class="text-primary-600">decisiones inteligentes</span>
+			Desarrollo web de alto rendimiento e <span class="text-primary-600">inteligencia geoespacial</span> en Chile
 		</h1>
 		<p class="mt-6 text-lg leading-8 text-secondary-600 sm:text-xl">
-			Especialistas en desarrollo web, data science, machine learning y análisis satelital.
-			Soluciones tecnológicas que impulsan tu negocio.
+			Sistemas web a medida, data science y análisis geoespacial para organizaciones en Chile.
+			Tecnología moderna que convierte datos en ventaja competitiva.
 		</p>
 		<div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
 			<Button variant="primary" size="lg" href="/contacto">Comenzar proyecto</Button>

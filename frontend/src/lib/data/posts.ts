@@ -20,6 +20,18 @@ export type BlogCategory =
 
 export const posts: BlogPost[] = [
 	{
+		slug: 'surtgis-publicacion-ems',
+		title: 'SurtGIS fue aceptado en Environmental Modelling & Software (Elsevier, Q1)',
+		excerpt:
+			'Nuestro motor geoespacial en Rust fue publicado en una de las revistas de referencia en modelación ambiental. Qué significa esto y por qué importa para proyectos en Chile.',
+		author: 'Francisco Parra',
+		date: '2026-08-15',
+		readingTime: 5,
+		category: 'investigacion',
+		tags: ['SurtGIS', 'Rust', 'GIS', 'Publicación Científica', 'Análisis Geoespacial', 'Chile', 'Environmental Modelling'],
+		featured: true
+	},
+	{
 		slug: 'surtgis-quickstart-analisis-terreno',
 		title: 'SurtGIS Quickstart: Análisis de terreno de los Andes en 5 minutos',
 		excerpt:
