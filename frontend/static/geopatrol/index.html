@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>GeoPatrol — Demo Patrullaje de Ductos</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/geotiff@2.1.3/dist-browser/geotiff.js"></script>
+<style>
+	:root {
+		--azul: #0ea5e9; --azul-osc: #0369a1; --fondo-panel: #0f172a; --panel-2: #1e293b;
+		--texto-panel: #e2e8f0; --gris-panel: #94a3b8; --borde-panel: #334155;
+		--rojo: #ef4444; --ambar: #f59e0b; --verde: #22c55e;
+	}
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+	body { font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; display: flex; overflow: hidden; background: var(--fondo-panel); }
+
+	/* ---------- Sidebar ---------- */
+	#sidebar { width: 340px; min-width: 340px; background: var(--fondo-panel); color: var(--texto-panel); display: flex; flex-direction: column; overflow-y: auto; border-right: 1px solid var(--borde-panel); }
+	.logo { padding: 1rem 1.2rem; border-bottom: 1px solid var(--borde-panel); display: flex; align-items: center; gap: 0.6rem; }
+	.logo .marca { font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em; }
+	.logo .marca span { color: var(--azul); }
+	.logo .sub { font-size: 0.68rem; color: var(--gris-panel); margin-top: 0.1rem; }
+	.demo-badge { margin-left: auto; background: var(--ambar); color: #1e1b04; font-size: 0.62rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 4px; letter-spacing: 0.05em; }
+
+	.seccion { padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--borde-panel); }
+	.seccion h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gris-panel); margin-bottom: 0.6rem; }
+
+	.proyecto { font-size: 0.9rem; font-weight: 600; }
+	.proyecto small { display: block; color: var(--gris-panel); font-weight: 400; margin-top: 0.15rem; }
+
+	.kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+	.kpi { background: var(--panel-2); border-radius: 8px; padding: 0.55rem 0.7rem; }
+	.kpi .valor { font-size: 1.25rem; font-weight: 800; }
+	.kpi .nombre { font-size: 0.65rem; color: var(--gris-panel); }
+	.kpi.critico .valor { color: var(--rojo); }
+	.kpi.ok .valor { color: var(--verde); }
+
+	.inspeccion { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.6rem; border-radius: 6px; font-size: 0.82rem; cursor: default; }
+	.inspeccion.activa { background: var(--panel-2); border-left: 3px solid var(--azul); }
+	.inspeccion.pasada { opacity: 0.45; }
+	.inspeccion .fecha { font-weight: 600; }
+	.inspeccion .detalle { font-size: 0.68rem; color: var(--gris-panel); }
+
+	.hallazgo { background: var(--panel-2); border-radius: 8px; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; cursor: pointer; border-left: 3px solid var(--gris-panel); transition: transform 0.1s; }
+	.hallazgo:hover { transform: translateX(3px); }
+	.hallazgo.alta { border-left-color: var(--rojo); }
+	.hallazgo.media { border-left-color: var(--ambar); }
+	.hallazgo.baja { border-left-color: var(--verde); }
+	.hallazgo .clase { font-size: 0.82rem; font-weight: 700; }
+	.hallazgo .meta { font-size: 0.68rem; color: var(--gris-panel); margin-top: 0.15rem; display: flex; gap: 0.7rem; flex-wrap: wrap; }
+	.conf { color: var(--azul); font-weight: 700; }
+	.estado { padding: 0.05rem 0.4rem; border-radius: 4px; font-size: 0.62rem; font-weight: 700; }
+	.estado.pendiente { background: #451a03; color: var(--ambar); }
+	.estado.validado { background: #052e16; color: var(--verde); }
+
+	.botones { display: flex; gap: 0.5rem; }
+	button.accion { flex: 1; background: var(--panel-2); color: var(--texto-panel); border: 1px solid var(--borde-panel); border-radius: 6px; padding: 0.5rem; font-size: 0.75rem; cursor: pointer; }
+	button.accion:hover { border-color: var(--azul); color: var(--azul); }
+
+	.pie { padding: 0.8rem 1.2rem; font-size: 0.62rem; color: var(--gris-panel); margin-top: auto; }
+
+	/* ---------- Mapa ---------- */
+	#mapa-contenedor { flex: 1; position: relative; }
+	#map { width: 100%; height: 100%; background: #0a0f1a; }
+
+	.barra-superior { position: absolute; top: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: center; pointer-events: none; }
+	.control-comparacion { pointer-events: auto; background: rgba(15,23,42,0.92); color: var(--texto-panel); border-radius: 0 0 10px 10px; padding: 0.5rem 1.1rem; display: flex; align-items: center; gap: 0.9rem; font-size: 0.78rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+	.control-comparacion label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+	.control-comparacion input[type=range] { width: 130px; accent-color: var(--azul); }
+	.control-comparacion input[type=checkbox] { accent-color: var(--azul); }
+
+	.etiqueta-capa { position: absolute; bottom: 22px; z-index: 900; background: rgba(15,23,42,0.85); color: var(--texto-panel); font-size: 0.68rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 5px; pointer-events: none; }
+	#et-izq { left: 10px; }
+	#et-der { right: 10px; }
+
+	/* divisor swipe */
+	#divisor { position: absolute; top: 0; bottom: 0; width: 4px; background: var(--azul); z-index: 950; cursor: ew-resize; display: none; }
+	#divisor::after { content: '⇔'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--azul); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+
+	/* popup */
+	.leaflet-popup-content-wrapper { background: var(--fondo-panel); color: var(--texto-panel); border-radius: 10px; }
+	.leaflet-popup-tip { background: var(--fondo-panel); }
+	.pop { width: 230px; }
+	.pop img { width: 100%; border-radius: 6px; margin: 0.4rem 0; border: 1px solid var(--borde-panel); }
+	.pop .clase { font-weight: 800; font-size: 0.9rem; }
+	.pop .fila { display: flex; justify-content: space-between; font-size: 0.72rem; margin-top: 0.25rem; color: var(--gris-panel); }
+	.pop .fila b { color: var(--texto-panel); }
+	.pop .acciones { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
+	.pop .acciones button { flex: 1; font-size: 0.68rem; padding: 0.3rem; border-radius: 5px; border: none; cursor: pointer; font-weight: 700; }
+	.b-validar { background: #052e16; color: var(--verde); }
+	.b-descartar { background: #450a0a; color: var(--rojo); }
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+	<div class="logo">
+		<div>
+			<div class="marca">Geo<span>Patrol</span></div>
+			<div class="sub">Territorio Digital · Plataforma de patrullaje UAV</div>
+		</div>
+		<span class="demo-badge">DEMO</span>
+	</div>
+
+	<div class="seccion">
+		<div class="proyecto">
+			Corredor Membrillar — Región del Biobío
+			<small>Franja de servidumbre 3,1 km · Ortomosaico real UAV (OpenAerialMap, GSD 39 cm)</small>
+		</div>
+	</div>
+
+	<div class="seccion">
+		<h2>Indicadores de gestión</h2>
+		<div class="kpis">
+			<div class="kpi critico"><div class="valor" id="kpi-criticos">—</div><div class="nombre">Hallazgos críticos</div></div>
+			<div class="kpi"><div class="valor" id="kpi-total">—</div><div class="nombre">Hallazgos totales</div></div>
+			<div class="kpi ok"><div class="valor" id="kpi-validados">—</div><div class="nombre">Validados</div></div>
+			<div class="kpi"><div class="valor">3,1 km</div><div class="nombre">Franja patrullada</div></div>
+		</div>
+	</div>
+
+	<div class="seccion">
+		<h2>Historial de inspecciones</h2>
+		<div class="inspeccion activa">
+			<div>
+				<div class="fecha">15 oct 2019 — Inspección #12</div>
+				<div class="detalle">UAV ala fija · 214 imágenes · procesada ✓</div>
+			</div>
+		</div>
+		<div class="inspeccion pasada">
+			<div>
+				<div class="fecha">02 sep 2019 — Inspección #11</div>
+				<div class="detalle">historial simulado en esta demo</div>
+			</div>
+		</div>
+		<div class="inspeccion pasada">
+			<div>
+				<div class="fecha">18 jul 2019 — Inspección #10</div>
+				<div class="detalle">historial simulado en esta demo</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="seccion" style="flex:1">
+		<h2>Hallazgos detectados por IA <span style="color:var(--azul)">(simulados)</span></h2>
+		<div id="lista-hallazgos"></div>
+	</div>
+
+	<div class="seccion">
+		<h2>Análisis de terreno — SurtGIS <span style="color:var(--azul)">Rust → WASM</span></h2>
+		<div class="botones" style="margin-bottom:0.5rem">
+			<button class="accion zona activa-zona" id="zona-corredor" onclick="cambiarZona('corredor')">Corredor</button>
+			<button class="accion zona" id="zona-cordillera" onclick="cambiarZona('cordillera')">⛰ Nevados de Chillán</button>
+		</div>
+		<div class="botones" style="flex-wrap:wrap">
+			<button class="accion btn-surtgis" id="btn-hillshade" disabled onclick="analizarTerreno('hillshade')">Relieve</button>
+			<button class="accion btn-surtgis" id="btn-slope" disabled onclick="analizarTerreno('slope')">Pendiente</button>
+			<button class="accion btn-surtgis" id="btn-geo" disabled onclick="analizarTerreno('geomorphons')">Geoformas</button>
+			<button class="accion btn-surtgis" id="btn-svf" disabled onclick="analizarTerreno('svf')">Cielo visible</button>
+			<button class="accion" onclick="quitarAnalisis()">✕ Quitar</button>
+		</div>
+		<div id="surtgis-status" style="font-size:0.68rem; color:var(--gris-panel); margin-top:0.5rem">Cargando motor WASM…</div>
+		<div id="surtgis-legend" style="display:none; flex-wrap:wrap; gap:0.3rem; margin-top:0.5rem"></div>
+		<div id="surtgis-zona-info" style="font-size:0.62rem; color:var(--gris-panel); margin-top:0.35rem">DEM Copernicus 30 m del corredor (505×433 px). Cómputo 100% en su navegador — motor propio publicado en <i>Environmental Modelling &amp; Software</i> (Elsevier, 2026).</div>
+	</div>
+	<style>
+		.accion.zona.activa-zona { border-color: var(--azul); color: var(--azul); font-weight: 700; }
+	</style>
+
+	<div class="seccion">
+		<div class="botones">
+			<button class="accion" onclick="exportarGeoJSON()">⬇ GeoJSON</button>
+			<button class="accion" onclick="exportarCSV()">⬇ CSV</button>
+		</div>
+	</div>
+
+	<div class="pie">
+		DEMO TÉCNICA · Ortomosaico UAV real de Membrillar, Biobío (OpenAerialMap, oct 2019, licencia CC-BY). El trazado del ducto y los hallazgos son simulados con fines de demostración. Territorio Digital © 2026.
+	</div>
+</aside>
+
+<div id="mapa-contenedor">
+	<div id="map"></div>
+	<div class="barra-superior">
+		<div class="control-comparacion">
+			<label><input type="checkbox" id="chk-swipe" onchange="toggleSwipe()"> Comparación temporal</label>
+			<label>Opacidad ortomosaico <input type="range" id="rng-opacidad" min="0" max="100" value="100" oninput="cambiarOpacidad(this.value)"></label>
+		</div>
+	</div>
+	<div id="divisor"></div>
+	<div class="etiqueta-capa" id="et-izq" style="display:none">◀ Línea base satelital</div>
+	<div class="etiqueta-capa" id="et-der" style="display:none">Inspección UAV 15-oct-2019 ▶</div>
+</div>
+
+<script>
+// ================= Datos =================
+const BBOX = [[-37.0689, -72.4537], [-37.0520, -72.4333]];
+const OAM_URL = 'https://tiles.openaerialmap.org/5da7945be845550007306c7b/0/5da7945be845550007306c7c/{z}/{x}/{y}';
+
+// Trazado simulado del ducto cruzando el ortomosaico
+const ducto = [
+	[-37.0688, -72.4532], [-37.0664, -72.4507], [-37.0645, -72.4478],
+	[-37.0625, -72.4452], [-37.0603, -72.4425], [-37.0580, -72.4398],
+	[-37.0558, -72.4372], [-37.0537, -72.4348], [-37.0523, -72.4336]
+];
+
+// Hallazgos simulados del "modelo de detección"
+const hallazgos = [
+	{ id: 'H-201', clase: 'Construcción no autorizada', sev: 'alta', conf: 0.94, lat: -37.0645, lon: -72.4473, estado: 'pendiente', dist: '8 m del eje' },
+	{ id: 'H-202', clase: 'Maquinaria en franja de servidumbre', sev: 'alta', conf: 0.91, lat: -37.0603, lon: -72.4430, estado: 'pendiente', dist: '4 m del eje' },
+	{ id: 'H-203', clase: 'Cruce vehicular no autorizado', sev: 'media', conf: 0.87, lat: -37.0580, lon: -72.4393, estado: 'validado', dist: 'sobre el eje' },
+	{ id: 'H-204', clase: 'Erosión / socavón', sev: 'media', conf: 0.82, lat: -37.0664, lon: -72.4512, estado: 'pendiente', dist: '12 m del eje' },
+	{ id: 'H-205', clase: 'Vegetación mayor sobre el trazado', sev: 'baja', conf: 0.78, lat: -37.0537, lon: -72.4352, estado: 'validado', dist: 'sobre el eje' },
+	{ id: 'H-206', clase: 'Acopio de material no identificado', sev: 'baja', conf: 0.74, lat: -37.0625, lon: -72.4447, estado: 'pendiente', dist: '15 m del eje' }
+];
+const colorSev = { alta: '#ef4444', media: '#f59e0b', baja: '#22c55e' };
+
+// ================= Mapa =================
+const map = L.map('map', { zoomControl: true }).fitBounds(BBOX);
+
+const capaBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Esri World Imagery', maxZoom: 19
+}).addTo(map);
+
+const capaOrto = L.tileLayer(OAM_URL, {
+	attribution: 'OpenAerialMap CC-BY', maxZoom: 20, maxNativeZoom: 18
+}).addTo(map);
+
+L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+// Franja de servidumbre (buffer visual) + eje del ducto
+L.polyline(ducto, { color: '#ef4444', weight: 14, opacity: 0.12 }).addTo(map);
+L.polyline(ducto, { color: '#ef4444', weight: 3, opacity: 0.9, dashArray: null }).addTo(map)
+	.bindTooltip('Eje del ducto (simulado)', { sticky: true });
+
+// Ruta de vuelo del patrullaje
+const ruta = ducto.map(([la, lo]) => [la + 0.0006, lo - 0.0004]);
+L.polyline(ruta, { color: '#0ea5e9', weight: 1.5, opacity: 0.8, dashArray: '6 6' }).addTo(map)
+	.bindTooltip('Ruta de vuelo UAV', { sticky: true });
+
+// ================= Hallazgos =================
+function tileThumb(lat, lon, z = 17) {
+	const n = 2 ** z;
+	const x = Math.floor((lon + 180) / 360 * n);
+	const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+	return OAM_URL.replace('{z}', z).replace('{x}', x).replace('{y}', y);
+}
+
+const marcadores = {};
+hallazgos.forEach(h => {
+	const icono = L.divIcon({
+		className: '',
+		html: `<div style="width:26px;height:26px;border-radius:50%;background:${colorSev[h.sev]};border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:11px">!</div>`,
+		iconSize: [26, 26], iconAnchor: [13, 13]
+	});
+	const m = L.marker([h.lat, h.lon], { icon: icono }).addTo(map);
+	m.bindPopup(`
+		<div class="pop">
+			<div class="clase" style="color:${colorSev[h.sev]}">${h.clase}</div>
+			<img src="${tileThumb(h.lat, h.lon)}" alt="Vista aérea del hallazgo ${h.id}">
+			<div class="fila"><span>ID</span><b>${h.id}</b></div>
+			<div class="fila"><span>Confianza del modelo</span><b class="conf">${(h.conf * 100).toFixed(0)}%</b></div>
+			<div class="fila"><span>Distancia al eje</span><b>${h.dist}</b></div>
+			<div class="fila"><span>Inspección</span><b>#12 · 15-oct-2019</b></div>
+			<div class="fila"><span>Estado</span><b>${h.estado}</b></div>
+			<div class="acciones">
+				<button class="b-validar">✓ Validar</button>
+				<button class="b-descartar">✕ Descartar</button>
+			</div>
+		</div>`);
+	marcadores[h.id] = m;
+});
+
+// Lista lateral
+const lista = document.getElementById('lista-hallazgos');
+hallazgos.forEach(h => {
+	const div = document.createElement('div');
+	div.className = `hallazgo ${h.sev}`;
+	div.innerHTML = `
+		<div class="clase">${h.clase}</div>
+		<div class="meta">
+			<span>${h.id}</span>
+			<span class="conf">${(h.conf * 100).toFixed(0)}%</span>
+			<span>sev. ${h.sev}</span>
+			<span class="estado ${h.estado}">${h.estado}</span>
+		</div>`;
+	div.onclick = () => { map.flyTo([h.lat, h.lon], 18); marcadores[h.id].openPopup(); };
+	lista.appendChild(div);
+});
+
+// KPIs
+document.getElementById('kpi-total').textContent = hallazgos.length;
+document.getElementById('kpi-criticos').textContent = hallazgos.filter(h => h.sev === 'alta').length;
+document.getElementById('kpi-validados').textContent = hallazgos.filter(h => h.estado === 'validado').length;
+
+// ================= Opacidad y swipe =================
+function cambiarOpacidad(v) { capaOrto.setOpacity(v / 100); }
+
+let swipeActivo = false;
+const divisor = document.getElementById('divisor');
+const cont = document.getElementById('mapa-contenedor');
+
+function aplicarClip() {
+	if (!swipeActivo) return;
+	const rect = cont.getBoundingClientRect();
+	const x = parseFloat(divisor.style.left || '50%') / 100 * rect.width;
+	const pane = capaOrto.getContainer();
+	if (pane) {
+		const mapRect = map.getContainer().getBoundingClientRect();
+		pane.style.clipPath = `inset(0 0 0 ${x - (mapRect.left - rect.left)}px)`;
+	}
+}
+
+function toggleSwipe() {
+	swipeActivo = document.getElementById('chk-swipe').checked;
+	divisor.style.display = swipeActivo ? 'block' : 'none';
+	document.getElementById('et-izq').style.display = swipeActivo ? 'block' : 'none';
+	document.getElementById('et-der').style.display = swipeActivo ? 'block' : 'none';
+	const pane = capaOrto.getContainer();
+	if (swipeActivo) {
+		divisor.style.left = '50%';
+		aplicarClip();
+	} else if (pane) {
+		pane.style.clipPath = 'none';
+	}
+}
+
+let arrastrando = false;
+divisor.addEventListener('mousedown', () => { arrastrando = true; });
+window.addEventListener('mouseup', () => { arrastrando = false; });
+window.addEventListener('mousemove', e => {
+	if (!arrastrando) return;
+	const rect = cont.getBoundingClientRect();
+	const pct = Math.max(5, Math.min(95, (e.clientX - rect.left) / rect.width * 100));
+	divisor.style.left = pct + '%';
+	aplicarClip();
+});
+map.on('move zoom resize', aplicarClip);
+
+// ================= Exportación =================
+function descargarArchivo(nombre, contenido, tipo) {
+	const blob = new Blob([contenido], { type: tipo });
+	const a = document.createElement('a');
+	a.href = URL.createObjectURL(blob);
+	a.download = nombre;
+	a.click();
+	URL.revokeObjectURL(a.href);
+}
+
+function exportarGeoJSON() {
+	const gj = {
+		type: 'FeatureCollection',
+		features: hallazgos.map(h => ({
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: [h.lon, h.lat] },
+			properties: { id: h.id, clase: h.clase, severidad: h.sev, confianza: h.conf, estado: h.estado, distancia_eje: h.dist, inspeccion: '#12 2019-10-15' }
+		}))
+	};
+	descargarArchivo('hallazgos_inspeccion_12.geojson', JSON.stringify(gj, null, 2), 'application/geo+json');
+}
+
+function exportarCSV() {
+	const filas = [['id', 'clase', 'severidad', 'confianza', 'estado', 'distancia_eje', 'lat', 'lon', 'inspeccion']];
+	hallazgos.forEach(h => filas.push([h.id, h.clase, h.sev, h.conf, h.estado, h.dist, h.lat, h.lon, '#12 2019-10-15']));
+	descargarArchivo('hallazgos_inspeccion_12.csv', filas.map(f => f.join(';')).join('\n'), 'text/csv');
+}
+
+window.mapRef = map;
+</script>
+
+<!-- ============ Módulo SurtGIS (Rust → WebAssembly) ============ -->
+<script type="module">
+import init, { slope, multidirectional_hillshade, geomorphons_compute, sky_view_factor }
+	from './wasm/surtgis_wasm.js';
+
+// Zonas de análisis: DEMs Copernicus 30 m reproyectados a UTM (metros) —
+// la pendiente y el TWI requieren tamaño de celda en metros, no en grados.
+// bounds = envolvente WGS84 del raster UTM (esquinas vía gdalinfo).
+const ZONAS = {
+	corredor: {
+		url: './dem_corredor_utm.tif',
+		bounds: [[-37.123143, -72.52405], [-36.996846, -72.375646]],
+		info: 'DEM Copernicus 30 m del corredor, UTM 18S (428×456 px, 81–170 m). Cómputo 100% en su navegador — motor propio publicado en <i>Environmental Modelling &amp; Software</i> (Elsevier, 2026).',
+		bytes: null
+	},
+	cordillera: {
+		url: './dem_chillan_utm.tif',
+		bounds: [[-36.965075, -71.506349], [-36.765055, -71.254134]],
+		info: 'DEM Copernicus 30 m — Complejo volcánico Nevados de Chillán, UTM 19S (732×722 px, 778–3.191 m). Zona del estudio de detección de cambios publicado en <i>Remote Sensing Applications</i> (Elsevier, 2026).',
+		bytes: null
+	}
+};
+let zonaActiva = 'corredor';
+
+const status = document.getElementById('surtgis-status');
+const zonaInfo = document.getElementById('surtgis-zona-info');
+let capaAnalisis = null;
+let rectExtension = null;
+
+async function cargarZona(nombre) {
+	const z = ZONAS[nombre];
+	if (z.bytes) return z;
+	const resp = await fetch(z.url);
+	if (!resp.ok) throw new Error('No se pudo cargar el DEM (¿estás sirviendo por http?)');
+	z.bytes = new Uint8Array(await resp.arrayBuffer());
+	return z;
+}
+
+window.cambiarZona = async function (nombre) {
+	zonaActiva = nombre;
+	document.getElementById('zona-corredor').classList.toggle('activa-zona', nombre === 'corredor');
+	document.getElementById('zona-cordillera').classList.toggle('activa-zona', nombre === 'cordillera');
+	zonaInfo.innerHTML = ZONAS[nombre].info;
+	quitarAnalisis();
+	window.mapRef.flyToBounds(ZONAS[nombre].bounds, { duration: 1.2 });
+	try {
+		status.textContent = 'Cargando DEM…';
+		await cargarZona(nombre);
+		status.textContent = 'Motor listo · DEM cargado (Copernicus 30 m)';
+	} catch (e) {
+		status.innerHTML = `<span style="color:var(--rojo)">${e.message || e}</span>`;
+	}
+};
+
+// ---- Colormaps ----
+function rampa(v, paradas) { // v en [0,1], paradas = [[t,r,g,b],...]
+	for (let i = 1; i < paradas.length; i++) {
+		if (v <= paradas[i][0]) {
+			const [t0, r0, g0, b0] = paradas[i - 1], [t1, r1, g1, b1] = paradas[i];
+			const f = (v - t0) / (t1 - t0 || 1);
+			return [r0 + f * (r1 - r0), g0 + f * (g1 - g0), b0 + f * (b1 - b0)];
+		}
+	}
+	return paradas[paradas.length - 1].slice(1);
+}
+const CMAPS = {
+	hillshade: v => [v * 255, v * 255, v * 255],
+	slope: v => rampa(v, [[0, 34, 139, 34], [0.35, 255, 235, 59], [0.7, 255, 152, 0], [1, 183, 28, 28]]),
+	svf: v => rampa(v, [[0, 30, 20, 60], [0.55, 140, 110, 150], [1, 255, 250, 235]])
+};
+
+// Geomorfonos: 10 clases de formas del terreno (categórico, no rampa)
+const GEOMORFONOS = {
+	1: ['Plano', [211, 211, 211]],
+	2: ['Cima', [165, 0, 38]],
+	3: ['Cresta', [244, 109, 67]],
+	4: ['Hombro', [253, 214, 97]],
+	5: ['Espolón', [217, 239, 139]],
+	6: ['Ladera', [102, 189, 99]],
+	7: ['Vaguada', [31, 173, 168]],
+	8: ['Pie de ladera', [116, 173, 209]],
+	9: ['Valle', [69, 117, 180]],
+	10: ['Depresión', [49, 54, 149]]
+};
+
+// ---- Render GeoTIFF resultado → overlay Leaflet ----
+async function renderResultado(tiffBytes, cmapName, nombreCapa, ms) {
+	const tiff = await GeoTIFF.fromArrayBuffer(tiffBytes.buffer.slice(tiffBytes.byteOffset, tiffBytes.byteOffset + tiffBytes.byteLength));
+	const image = await tiff.getImage();
+	const [raster] = await image.readRasters();
+	const w = image.getWidth(), h = image.getHeight();
+
+	// min/max ignorando NaN/nodata
+	let mn = Infinity, mx = -Infinity;
+	for (const v of raster) if (Number.isFinite(v)) { if (v < mn) mn = v; if (v > mx) mx = v; }
+
+	const canvas = document.createElement('canvas');
+	canvas.width = w; canvas.height = h;
+	const ctx = canvas.getContext('2d');
+	const img = ctx.createImageData(w, h);
+	if (cmapName === 'geomorphons') {
+		for (let i = 0; i < raster.length; i++) {
+			const c = GEOMORFONOS[Math.round(raster[i])];
+			if (!c) { img.data[i * 4 + 3] = 0; continue; }
+			img.data[i * 4] = c[1][0]; img.data[i * 4 + 1] = c[1][1]; img.data[i * 4 + 2] = c[1][2]; img.data[i * 4 + 3] = 235;
+		}
+	} else {
+		const cmap = CMAPS[cmapName];
+		for (let i = 0; i < raster.length; i++) {
+			const v = raster[i];
+			if (!Number.isFinite(v)) { img.data[i * 4 + 3] = 0; continue; }
+			const [r, g, b] = cmap((v - mn) / (mx - mn || 1));
+			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = 235;
+		}
+	}
+	ctx.putImageData(img, 0, 0);
+
+	// Leyenda categórica solo para geomorfonos
+	const leyenda = document.getElementById('surtgis-legend');
+	if (cmapName === 'geomorphons') {
+		leyenda.innerHTML = Object.values(GEOMORFONOS).map(([nombre, [r, g, b]]) =>
+			`<span style="display:inline-flex;align-items:center;gap:0.25rem;font-size:0.6rem;color:var(--gris-panel)"><span style="width:10px;height:10px;border-radius:2px;background:rgb(${r},${g},${b});display:inline-block"></span>${nombre}</span>`
+		).join('');
+		leyenda.style.display = 'flex';
+	} else {
+		leyenda.style.display = 'none';
+	}
+
+	quitarAnalisis();
+	const bounds = ZONAS[zonaActiva].bounds;
+	capaAnalisis = L.imageOverlay(canvas.toDataURL(), bounds, { opacity: 0.78 }).addTo(window.mapRef);
+	rectExtension = L.rectangle(bounds, { color: '#0ea5e9', weight: 1, fill: false, dashArray: '4 4' }).addTo(window.mapRef);
+	status.innerHTML = `<b style="color:var(--verde)">${nombreCapa}</b> — computado en <b style="color:var(--azul)">${ms} ms</b> en el navegador (${w}×${h} px, rango ${mn.toFixed(1)}–${mx.toFixed(1)})`;
+}
+
+window.quitarAnalisis = function () {
+	if (capaAnalisis) { window.mapRef.removeLayer(capaAnalisis); capaAnalisis = null; }
+	if (rectExtension) { window.mapRef.removeLayer(rectExtension); rectExtension = null; }
+	document.getElementById('surtgis-legend').style.display = 'none';
+};
+
+window.analizarTerreno = async function (tipo) {
+	const demBytes = ZONAS[zonaActiva].bytes;
+	if (!demBytes) return;
+	status.textContent = 'Computando…';
+	await new Promise(r => setTimeout(r, 30)); // deja pintar el estado
+	try {
+		const t0 = performance.now();
+		let out, nombre, cmap;
+		if (tipo === 'hillshade') { out = multidirectional_hillshade(demBytes); nombre = 'Relieve multidireccional'; cmap = 'hillshade'; }
+		else if (tipo === 'slope') { out = slope(demBytes, 'degrees'); nombre = 'Pendiente (grados)'; cmap = 'slope'; }
+		else if (tipo === 'geomorphons') { out = geomorphons_compute(demBytes, 1.0, 10); nombre = 'Geoformas (clasificación automática del relieve)'; cmap = 'geomorphons'; }
+		else { out = sky_view_factor(demBytes, 16, 10); nombre = 'Factor de cielo visible'; cmap = 'svf'; }
+		const ms = (performance.now() - t0).toFixed(0);
+		await renderResultado(out, cmap, nombre, ms);
+	} catch (e) {
+		status.innerHTML = `<span style="color:var(--rojo)">Error: ${e.message || e}</span>`;
+	}
+};
+
+// ---- Init ----
+(async () => {
+	try {
+		await init();
+		await cargarZona('corredor');
+		document.querySelectorAll('.btn-surtgis').forEach(b => b.disabled = false);
+		status.textContent = 'Motor listo · DEM del corredor cargado (Copernicus 30 m)';
+	} catch (e) {
+		status.innerHTML = `<span style="color:var(--rojo)">WASM/DEM no disponible: ${e.message || e}. Servir con ./servir-demo.sh</span>`;
+	}
+})();
+</script>
+</body>
+</html>
