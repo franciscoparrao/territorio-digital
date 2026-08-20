@@ -373,7 +373,7 @@ window.mapRef = map;
 
 <!-- ============ Módulo SurtGIS (Rust → WebAssembly) ============ -->
 <script type="module">
-import init, { slope, multidirectional_hillshade, geomorphons_compute, sky_view_factor }
+import init, { slope, hillshade_compute, geomorphons_compute, sky_view_factor }
 	from './wasm/surtgis_wasm.js';
 
 // Zonas de análisis: DEMs Copernicus 30 m reproyectados a UTM (metros) —
@@ -463,9 +463,19 @@ async function renderResultado(tiffBytes, cmapName, nombreCapa, ms) {
 	const [raster] = await image.readRasters();
 	const w = image.getWidth(), h = image.getHeight();
 
-	// min/max ignorando NaN/nodata
+	// Estiramiento por percentiles 2–98 (mejor contraste que min/max crudo,
+	// que se aplasta con outliers de borde). Para geomorfonos no aplica: es categórico.
 	let mn = Infinity, mx = -Infinity;
-	for (const v of raster) if (Number.isFinite(v)) { if (v < mn) mn = v; if (v > mx) mx = v; }
+	if (cmapName === 'geomorphons') {
+		for (const v of raster) if (Number.isFinite(v)) { if (v < mn) mn = v; if (v > mx) mx = v; }
+	} else {
+		const validos = [];
+		for (let i = 0; i < raster.length; i += 3) if (Number.isFinite(raster[i])) validos.push(raster[i]);
+		validos.sort((a, b) => a - b);
+		mn = validos[Math.floor(validos.length * 0.02)];
+		mx = validos[Math.floor(validos.length * 0.98)];
+		if (!(mx > mn)) { mn = validos[0]; mx = validos[validos.length - 1]; }
+	}
 
 	const canvas = document.createElement('canvas');
 	canvas.width = w; canvas.height = h;
@@ -482,7 +492,8 @@ async function renderResultado(tiffBytes, cmapName, nombreCapa, ms) {
 		for (let i = 0; i < raster.length; i++) {
 			const v = raster[i];
 			if (!Number.isFinite(v)) { img.data[i * 4 + 3] = 0; continue; }
-			const [r, g, b] = cmap((v - mn) / (mx - mn || 1));
+			const t = Math.max(0, Math.min(1, (v - mn) / (mx - mn || 1))); // clamp al rango estirado
+			const [r, g, b] = cmap(t);
 			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = 235;
 		}
 	}
@@ -503,6 +514,13 @@ async function renderResultado(tiffBytes, cmapName, nombreCapa, ms) {
 	const bounds = ZONAS[zonaActiva].bounds;
 	capaAnalisis = L.imageOverlay(canvas.toDataURL(), bounds, { opacity: 0.78 }).addTo(window.mapRef);
 	rectExtension = L.rectangle(bounds, { color: '#0ea5e9', weight: 1, fill: false, dashArray: '4 4' }).addTo(window.mapRef);
+
+	// El DEM cubre un área mucho mayor que el ortomosaico: si el mapa está
+	// acercado, el análisis llena la pantalla como una mancha uniforme.
+	// Encuadrar la extensión completa para que el resultado sea legible.
+	if (!window.mapRef.getBounds().contains(L.latLngBounds(bounds))) {
+		window.mapRef.flyToBounds(bounds, { padding: [20, 20], duration: 1.0 });
+	}
 	status.innerHTML = `<b style="color:var(--verde)">${nombreCapa}</b> — computado en <b style="color:var(--azul)">${ms} ms</b> en el navegador (${w}×${h} px, rango ${mn.toFixed(1)}–${mx.toFixed(1)})`;
 }
 
@@ -520,7 +538,7 @@ window.analizarTerreno = async function (tipo) {
 	try {
 		const t0 = performance.now();
 		let out, nombre, cmap;
-		if (tipo === 'hillshade') { out = multidirectional_hillshade(demBytes); nombre = 'Relieve multidireccional'; cmap = 'hillshade'; }
+		if (tipo === 'hillshade') { out = hillshade_compute(demBytes, 315, 45); nombre = 'Relieve sombreado'; cmap = 'hillshade'; }
 		else if (tipo === 'slope') { out = slope(demBytes, 'degrees'); nombre = 'Pendiente (grados)'; cmap = 'slope'; }
 		else if (tipo === 'geomorphons') { out = geomorphons_compute(demBytes, 1.0, 10); nombre = 'Geoformas (clasificación automática del relieve)'; cmap = 'geomorphons'; }
 		else { out = sky_view_factor(demBytes, 16, 10); nombre = 'Factor de cielo visible'; cmap = 'svf'; }
