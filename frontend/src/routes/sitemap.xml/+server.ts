@@ -23,6 +23,7 @@ export async function GET() {
 		{ url: '/servicios/asesoria', lastmod: buildDate },
 		{ url: '/publicaciones', lastmod: buildDate },
 		{ url: '/portfolio', lastmod: buildDate },
+		{ url: '/visor', lastmod: buildDate },
 		{ url: '/blog', lastmod: latestPostDate },
 		{ url: '/contacto', lastmod: buildDate },
 		{ url: '/privacidad', lastmod: '2025-11-22' },

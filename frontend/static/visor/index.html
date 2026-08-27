@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visor de análisis de terreno — Territorio Digital</title>
+<meta name="description" content="Dibuja un área en cualquier parte de Chile y obtén relieve, pendiente y clasificación de geoformas al instante. El análisis corre en tu navegador con SurtGIS, motor geoespacial en Rust publicado en Environmental Modelling & Software.">
+<link rel="stylesheet" href="./leaflet.css">
+<script src="./leaflet.js"></script>
+<script src="./geotiff.js"></script>
+<style>
+	:root{
+		--azul:#0ea5e9; --azul-osc:#0369a1; --panel:#0f172a; --panel2:#1e293b;
+		--texto:#e2e8f0; --gris:#94a3b8; --borde:#334155;
+		--verde:#22c55e; --ambar:#f59e0b; --rojo:#ef4444;
+	}
+	*{margin:0;padding:0;box-sizing:border-box}
+	body{font-family:'Segoe UI',system-ui,sans-serif;height:100vh;display:flex;overflow:hidden;background:var(--panel)}
+
+	#lateral{width:340px;min-width:340px;background:var(--panel);color:var(--texto);display:flex;flex-direction:column;overflow-y:auto;border-right:1px solid var(--borde)}
+	.marca{padding:1rem 1.2rem;border-bottom:1px solid var(--borde)}
+	.marca .t{font-weight:800;font-size:1.05rem}
+	.marca .t span{color:var(--azul)}
+	.marca .s{font-size:.7rem;color:var(--gris);margin-top:.15rem}
+
+	.bloque{padding:.9rem 1.2rem;border-bottom:1px solid var(--borde)}
+	.bloque h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gris);margin-bottom:.6rem}
+
+	.paso{display:flex;gap:.6rem;font-size:.82rem;margin-bottom:.5rem;color:var(--gris)}
+	.paso b{color:var(--texto)}
+	.num{flex-shrink:0;width:1.3rem;height:1.3rem;border-radius:50%;background:var(--panel2);color:var(--azul);font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+
+	button.b{background:var(--panel2);color:var(--texto);border:1px solid var(--borde);border-radius:6px;padding:.5rem;font-size:.75rem;cursor:pointer;transition:.15s}
+	button.b:hover:not(:disabled){border-color:var(--azul);color:var(--azul)}
+	button.b:disabled{opacity:.35;cursor:not-allowed}
+	button.b.activo{border-color:var(--azul);color:var(--azul);font-weight:700}
+	button.primario{background:var(--azul);color:#04222f;border-color:var(--azul);font-weight:700}
+	button.primario:hover:not(:disabled){background:#38bdf8;color:#04222f}
+	.fila{display:flex;gap:.5rem;flex-wrap:wrap}
+	.fila>*{flex:1;min-width:calc(50% - .25rem)}
+
+	.datos{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+	.dato{background:var(--panel2);border-radius:8px;padding:.5rem .65rem}
+	.dato .v{font-size:1.05rem;font-weight:800}
+	.dato .n{font-size:.62rem;color:var(--gris)}
+
+	#estado{font-size:.7rem;color:var(--gris);margin-top:.6rem;line-height:1.5}
+	#leyenda{display:none;flex-wrap:wrap;gap:.3rem;margin-top:.6rem}
+	.li{display:inline-flex;align-items:center;gap:.25rem;font-size:.6rem;color:var(--gris)}
+	.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+	.barra{height:10px;border-radius:3px;margin-top:.4rem}
+	.rango{display:flex;justify-content:space-between;font-size:.6rem;color:var(--gris);margin-top:.2rem}
+
+	.pie{padding:.9rem 1.2rem;font-size:.62rem;color:var(--gris);margin-top:auto;line-height:1.6}
+	.pie a{color:var(--azul);text-decoration:none}
+
+	#mapa-cont{flex:1;position:relative}
+	#map{width:100%;height:100%;background:#0a0f1a}
+	#map.dibujando{cursor:crosshair}
+
+	.aviso{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(15,23,42,.94);color:var(--texto);padding:.5rem 1rem;border-radius:8px;font-size:.78rem;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none}
+	.aviso.ver{display:block}
+	.aviso.error{border-left:3px solid var(--rojo)}
+</style>
+</head>
+<body>
+
+<aside id="lateral">
+	<div class="marca">
+		<div class="t">Visor de <span>análisis de terreno</span></div>
+		<div class="s">Territorio Digital · motor SurtGIS en tu navegador</div>
+	</div>
+
+	<div class="bloque">
+		<h2>Cómo usarlo</h2>
+		<div class="paso"><span class="num">1</span><div>Presiona <b>Seleccionar área</b> y arrastra un rectángulo sobre cualquier lugar de Chile.</div></div>
+		<div class="paso"><span class="num">2</span><div>Se descarga solo ese recorte del modelo de elevación, no el archivo completo.</div></div>
+		<div class="paso"><span class="num">3</span><div>Elige un análisis. El cálculo ocurre <b>en tu computador</b>, no en un servidor.</div></div>
+	</div>
+
+	<div class="bloque">
+		<div class="fila">
+			<button class="b primario" id="btn-sel" style="min-width:100%">Seleccionar área</button>
+		</div>
+		<div id="estado">Motor cargando…</div>
+	</div>
+
+	<div class="bloque" id="bloque-datos" style="display:none">
+		<h2>Área seleccionada</h2>
+		<div class="datos">
+			<div class="dato"><div class="v" id="d-elev">—</div><div class="n">Elevación (m)</div></div>
+			<div class="dato"><div class="v" id="d-area">—</div><div class="n">Superficie</div></div>
+			<div class="dato"><div class="v" id="d-px">—</div><div class="n">Píxeles</div></div>
+			<div class="dato"><div class="v" id="d-res">30 m</div><div class="n">Resolución</div></div>
+		</div>
+	</div>
+
+	<div class="bloque" id="bloque-analisis" style="display:none">
+		<h2>Análisis</h2>
+		<div class="fila">
+			<button class="b an" data-a="relieve" disabled>Relieve</button>
+			<button class="b an" data-a="pendiente" disabled>Pendiente</button>
+			<button class="b an" data-a="geoformas" disabled>Geoformas</button>
+			<button class="b an" data-a="curvatura" disabled>Curvatura</button>
+		</div>
+		<div class="fila" style="margin-top:.5rem">
+			<button class="b" id="btn-exportar" disabled>⬇ GeoTIFF</button>
+			<button class="b" id="btn-limpiar">✕ Limpiar</button>
+		</div>
+		<div id="leyenda"></div>
+	</div>
+
+	<div class="pie">
+		Modelo de elevación: <b>Copernicus GLO-30</b> (ESA, 30 m), servido por trozos desde su repositorio público.<br><br>
+		Los cálculos se ejecutan con <b>SurtGIS</b>, motor de análisis geoespacial escrito en Rust y compilado a WebAssembly, publicado en <i>Environmental Modelling &amp; Software</i> (Elsevier, 2026).
+		<a href="https://doi.org/10.1016/j.envsoft.2026.107102" target="_blank" rel="noopener">Ver publicación</a><br><br>
+		<a href="https://territorio-digital.cl">territorio-digital.cl</a>
+	</div>
+</aside>
+
+<div id="mapa-cont">
+	<div id="map"></div>
+	<div class="aviso" id="aviso"></div>
+</div>
+
+<script type="module">
+import init, { slope, hillshade_compute, geomorphons_compute, curvature_compute }
+	from './wasm/surtgis_wasm.js';
+import { escribirGeoTIFF } from './geotiff-writer.js';
+
+// ---------- Constantes del DEM Copernicus GLO-30 ----------
+const PX_POR_GRADO = 3600;       // cada tile cubre 1° x 1°
+const LADO_MAX = 0.25;           // grados por lado; tope para que el cálculo sea instantáneo
+const M_POR_GRADO = 111320;
+
+// ---------- Mapa ----------
+const map = L.map('map', { zoomControl: true }).setView([-36.87, -71.45], 11);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Esri World Imagery', maxZoom: 19
+}).addTo(map);
+L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+const $ = id => document.getElementById(id);
+const estado = $('estado');
+const aviso = $('aviso');
+let temporizadorAviso;
+function mostrarAviso(msg, esError = false) {
+	aviso.textContent = msg;
+	aviso.className = 'aviso ver' + (esError ? ' error' : '');
+	clearTimeout(temporizadorAviso);
+	temporizadorAviso = setTimeout(() => (aviso.className = 'aviso'), 4500);
+}
+
+// ---------- Estado ----------
+let listo = false;
+let recorte = null;      // { datos, ancho, alto, bounds, mX, mY }
+let capaAnalisis = null;
+let rectSeleccion = null;
+let ultimoResultado = null;
+
+// ---------- Nombre del tile que contiene un punto ----------
+// Los tiles se nombran por su esquina: S37_W072 cubre lat -37..-36, lon -72..-71.
+function nombreTile(lat, lon) {
+	const ns = lat < 0 ? 'S' : 'N';
+	const ew = lon < 0 ? 'W' : 'E';
+	const la = lat < 0 ? Math.ceil(-lat) : Math.floor(lat);
+	const lo = lon < 0 ? Math.ceil(-lon) : Math.floor(lon);
+	return `Copernicus_DSM_COG_10_${ns}${String(la).padStart(2, '0')}_00_${ew}${String(lo).padStart(3, '0')}_00_DEM`;
+}
+// Esquina noroeste del tile, para convertir coordenadas a píxeles
+function origenTile(lat, lon) {
+	return {
+		latNorte: lat < 0 ? -Math.ceil(-lat) + 1 : Math.floor(lat) + 1,
+		lonOeste: lon < 0 ? -Math.ceil(-lon) : Math.floor(lon)
+	};
+}
+
+// ---------- Descarga del recorte ----------
+async function cargarRecorte(bounds) {
+	const s = bounds.getSouth(), n = bounds.getNorth();
+	const o = bounds.getWest(), e = bounds.getEast();
+
+	if (n - s > LADO_MAX || e - o > LADO_MAX) {
+		throw new Error(`El área es muy grande. Máximo ${LADO_MAX}° por lado, unos 25 km.`);
+	}
+	if (nombreTile(s, o) !== nombreTile(n, e)) {
+		throw new Error('El área cruza el borde entre dos celdas del modelo. Dibuja una más acotada.');
+	}
+
+	const tile = nombreTile(s, o);
+	const { latNorte, lonOeste } = origenTile(s, o);
+
+	const x0 = Math.round((o - lonOeste) * PX_POR_GRADO);
+	const x1 = Math.round((e - lonOeste) * PX_POR_GRADO);
+	const y0 = Math.round((latNorte - n) * PX_POR_GRADO);
+	const y1 = Math.round((latNorte - s) * PX_POR_GRADO);
+	const ancho = x1 - x0, alto = y1 - y0;
+	if (ancho < 8 || alto < 8) throw new Error('El área es demasiado pequeña.');
+
+	const tiff = await GeoTIFF.fromUrl(`/dem/${tile}`);
+	const img = await tiff.getImage();
+	const [datos] = await img.readRasters({ window: [x0, y0, x1, y1] });
+
+	// El DEM viene en grados. La pendiente y las geoformas necesitan el tamaño de
+	// celda en metros: si se usaran grados, el cálculo saturaría cerca de 90°.
+	const latCentro = (s + n) / 2;
+	const grPx = 1 / PX_POR_GRADO;
+	const mY = M_POR_GRADO * grPx;
+	const mX = M_POR_GRADO * Math.cos(latCentro * Math.PI / 180) * grPx;
+
+	return { datos, ancho, alto, bounds, mX, mY };
+}
+
+// ---------- Paletas ----------
+function rampa(v, paradas) {
+	for (let i = 1; i < paradas.length; i++) {
+		if (v <= paradas[i][0]) {
+			const [t0, r0, g0, b0] = paradas[i - 1], [t1, r1, g1, b1] = paradas[i];
+			const f = (v - t0) / (t1 - t0 || 1);
+			return [r0 + f * (r1 - r0), g0 + f * (g1 - g0), b0 + f * (b1 - b0)];
+		}
+	}
+	return paradas[paradas.length - 1].slice(1);
+}
+const PALETAS = {
+	relieve: v => [v * 255, v * 255, v * 255],
+	pendiente: v => rampa(v, [[0, 34, 139, 34], [.35, 255, 235, 59], [.7, 255, 152, 0], [1, 183, 28, 28]]),
+	curvatura: v => rampa(v, [[0, 33, 102, 172], [.5, 247, 247, 247], [1, 178, 24, 43]])
+};
+const GEOFORMAS = {
+	1: ['Plano', [211, 211, 211]], 2: ['Cima', [165, 0, 38]], 3: ['Cresta', [244, 109, 67]],
+	4: ['Hombro', [253, 214, 97]], 5: ['Espolón', [217, 239, 139]], 6: ['Ladera', [102, 189, 99]],
+	7: ['Vaguada', [31, 173, 168]], 8: ['Pie de ladera', [116, 173, 209]],
+	9: ['Valle', [69, 117, 180]], 10: ['Depresión', [49, 54, 149]]
+};
+
+// ---------- Análisis ----------
+const ANALISIS = {
+	relieve:   { nombre: 'Relieve sombreado', fn: b => hillshade_compute(b, 315, 45), pal: 'relieve', unidad: '' },
+	pendiente: { nombre: 'Pendiente',         fn: b => slope(b, 'degrees'),           pal: 'pendiente', unidad: '°' },
+	geoformas: { nombre: 'Geoformas',         fn: b => geomorphons_compute(b, 1.0, 10), pal: 'geoformas', unidad: '' },
+	curvatura: { nombre: 'Curvatura',         fn: b => curvature_compute(b, 'general'), pal: 'curvatura', unidad: '' }
+};
+
+async function ejecutar(clave) {
+	if (!recorte) return;
+	const cfg = ANALISIS[clave];
+	document.querySelectorAll('.an').forEach(b => b.classList.toggle('activo', b.dataset.a === clave));
+	estado.textContent = 'Calculando…';
+	await new Promise(r => setTimeout(r, 20));
+
+	try {
+		const bytes = escribirGeoTIFF(recorte.datos, recorte.ancho, recorte.alto, recorte.mX, recorte.mY);
+		const t0 = performance.now();
+		const salida = cfg.fn(bytes);
+		const ms = performance.now() - t0;
+
+		const t = await GeoTIFF.fromArrayBuffer(salida.buffer.slice(salida.byteOffset, salida.byteOffset + salida.byteLength));
+		const [raster] = await (await t.getImage()).readRasters();
+		ultimoResultado = { bytes: salida, nombre: cfg.nombre };
+		pintar(raster, recorte.ancho, recorte.alto, cfg, ms);
+	} catch (e) {
+		estado.innerHTML = `<span style="color:var(--rojo)">Error: ${e.message || e}</span>`;
+	}
+}
+
+function pintar(raster, w, h, cfg, ms) {
+	const cv = document.createElement('canvas');
+	cv.width = w; cv.height = h;
+	const ctx = cv.getContext('2d');
+	const img = ctx.createImageData(w, h);
+	const leyenda = $('leyenda');
+	let mn = 0, mx = 0;
+
+	if (cfg.pal === 'geoformas') {
+		for (let i = 0; i < raster.length; i++) {
+			const c = GEOFORMAS[Math.round(raster[i])];
+			if (!c) { img.data[i * 4 + 3] = 0; continue; }
+			img.data[i * 4] = c[1][0]; img.data[i * 4 + 1] = c[1][1]; img.data[i * 4 + 2] = c[1][2]; img.data[i * 4 + 3] = 225;
+		}
+		leyenda.innerHTML = Object.values(GEOFORMAS).map(([n, [r, g, b]]) =>
+			`<span class="li"><span class="sw" style="background:rgb(${r},${g},${b})"></span>${n}</span>`).join('');
+	} else {
+		// Estiramiento por percentiles 2–98: evita que un valor extremo de borde aplaste el contraste.
+		const val = [];
+		for (let i = 0; i < raster.length; i += 3) if (Number.isFinite(raster[i])) val.push(raster[i]);
+		val.sort((a, b) => a - b);
+		mn = val[Math.floor(val.length * .02)]; mx = val[Math.floor(val.length * .98)];
+		if (!(mx > mn)) { mn = val[0]; mx = val[val.length - 1]; }
+		const pal = PALETAS[cfg.pal];
+		for (let i = 0; i < raster.length; i++) {
+			const v = raster[i];
+			if (!Number.isFinite(v)) { img.data[i * 4 + 3] = 0; continue; }
+			const t = Math.max(0, Math.min(1, (v - mn) / (mx - mn || 1)));
+			const [r, g, b] = pal(t);
+			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = 225;
+		}
+		const grad = Array.from({ length: 11 }, (_, i) => {
+			const [r, g, b] = pal(i / 10); return `rgb(${r|0},${g|0},${b|0})`;
+		}).join(',');
+		leyenda.innerHTML = `<div style="width:100%"><div class="barra" style="background:linear-gradient(90deg,${grad})"></div>
+			<div class="rango"><span>${mn.toFixed(1)}${cfg.unidad}</span><span>${mx.toFixed(1)}${cfg.unidad}</span></div></div>`;
+	}
+	ctx.putImageData(img, 0, 0);
+	leyenda.style.display = 'flex';
+
+	if (capaAnalisis) map.removeLayer(capaAnalisis);
+	capaAnalisis = L.imageOverlay(cv.toDataURL(), recorte.bounds, { opacity: .8 }).addTo(map);
+	$('btn-exportar').disabled = false;
+
+	estado.innerHTML = `<b style="color:var(--verde)">${cfg.nombre}</b> — calculado en <b style="color:var(--azul)">${ms.toFixed(0)} ms</b> en tu navegador`;
+}
+
+// ---------- Selección de área por arrastre ----------
+let dibujando = false, inicio = null, rectTemporal = null;
+$('btn-sel').onclick = () => {
+	if (!listo) return;
+    dibujando = true;
+	map.dragging.disable();
+	map.getContainer().classList.add('dibujando');
+	mostrarAviso('Arrastra sobre el mapa para definir el área');
+};
+map.on('mousedown', e => { if (!dibujando) return; inicio = e.latlng; });
+map.on('mousemove', e => {
+	if (!dibujando || !inicio) return;
+	const b = L.latLngBounds(inicio, e.latlng);
+	if (rectTemporal) rectTemporal.setBounds(b);
+	else rectTemporal = L.rectangle(b, { color: '#0ea5e9', weight: 2, dashArray: '5 5', fillOpacity: .08 }).addTo(map);
+});
+map.on('mouseup', async e => {
+	if (!dibujando || !inicio) return;
+	dibujando = false;
+	map.dragging.enable();
+	map.getContainer().classList.remove('dibujando');
+	const b = L.latLngBounds(inicio, e.latlng);
+	inicio = null;
+	if (rectTemporal) { map.removeLayer(rectTemporal); rectTemporal = null; }
+	await seleccionar(b);
+});
+
+async function seleccionar(bounds) {
+	limpiar(false);
+	estado.textContent = 'Descargando el recorte del modelo de elevación…';
+	try {
+		recorte = await cargarRecorte(bounds);
+		rectSeleccion = L.rectangle(bounds, { color: '#0ea5e9', weight: 2, fill: false }).addTo(map);
+
+		const v = Array.from(recorte.datos).filter(Number.isFinite);
+		const mn = Math.min(...v), mx = Math.max(...v);
+		const kmX = (bounds.getEast() - bounds.getWest()) * M_POR_GRADO * Math.cos(bounds.getCenter().lat * Math.PI / 180) / 1000;
+		const kmY = (bounds.getNorth() - bounds.getSouth()) * M_POR_GRADO / 1000;
+
+		$('d-elev').textContent = `${mn.toFixed(0)}–${mx.toFixed(0)}`;
+		$('d-area').textContent = `${(kmX * kmY).toFixed(1)} km²`;
+		$('d-px').textContent = (recorte.ancho * recorte.alto).toLocaleString('es-CL');
+		$('bloque-datos').style.display = 'block';
+		$('bloque-analisis').style.display = 'block';
+		document.querySelectorAll('.an').forEach(b => b.disabled = false);
+		estado.textContent = 'Listo. Elige un análisis.';
+		map.fitBounds(bounds, { padding: [40, 40] });
+	} catch (e) {
+		estado.innerHTML = `<span style="color:var(--ambar)">${e.message || e}</span>`;
+		mostrarAviso(e.message || String(e), true);
+	}
+}
+
+function limpiar(todo = true) {
+	if (capaAnalisis) { map.removeLayer(capaAnalisis); capaAnalisis = null; }
+	if (rectSeleccion) { map.removeLayer(rectSeleccion); rectSeleccion = null; }
+	$('leyenda').style.display = 'none';
+	$('btn-exportar').disabled = true;
+	document.querySelectorAll('.an').forEach(b => b.classList.remove('activo'));
+	if (todo) {
+		recorte = null; ultimoResultado = null;
+		$('bloque-datos').style.display = 'none';
+		$('bloque-analisis').style.display = 'none';
+		estado.textContent = 'Selecciona un área para empezar.';
+	}
+}
+$('btn-limpiar').onclick = () => limpiar(true);
+
+$('btn-exportar').onclick = () => {
+	if (!ultimoResultado) return;
+	const blob = new Blob([ultimoResultado.bytes], { type: 'image/tiff' });
+	const a = document.createElement('a');
+	a.href = URL.createObjectURL(blob);
+	a.download = ultimoResultado.nombre.toLowerCase().replace(/\s+/g, '_') + '.tif';
+	a.click();
+	URL.revokeObjectURL(a.href);
+};
+
+document.querySelectorAll('.an').forEach(b => b.onclick = () => ejecutar(b.dataset.a));
+
+// ---------- Arranque ----------
+(async () => {
+	try {
+		await init();
+		listo = true;
+		estado.textContent = 'Motor listo. Presiona «Seleccionar área» y arrastra sobre el mapa.';
+	} catch (e) {
+		estado.innerHTML = `<span style="color:var(--rojo)">No se pudo cargar el motor: ${e.message || e}</span>`;
+	}
+})();
+</script>
+</body>
+</html>
