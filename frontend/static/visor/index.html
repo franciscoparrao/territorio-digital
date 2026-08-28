@@ -78,6 +78,16 @@
 	#map{width:100%;height:100%;background:#0a0f1a}
 	#map.dibujando{cursor:crosshair}
 
+	#perfil{position:absolute;left:0;right:0;bottom:0;z-index:1000;background:rgba(15,23,42,.95);border-top:1px solid var(--borde);padding:.7rem .9rem;display:none}
+	#perfil.ver{display:block}
+	#perfil .cab{display:flex;align-items:center;gap:1rem;margin-bottom:.4rem}
+	#perfil .tit{font-size:.78rem;font-weight:700;color:var(--texto)}
+	#perfil .met{display:flex;gap:1.1rem;font-size:.7rem;color:var(--gris);flex-wrap:wrap}
+	#perfil .met b{color:var(--azul)}
+	#perfil .cerrar{margin-left:auto;cursor:pointer;color:var(--gris);font-size:.85rem}
+	#perfil .cerrar:hover{color:var(--rojo)}
+	#perfil svg{width:100%;height:140px;display:block}
+
 	.aviso{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(15,23,42,.94);color:var(--texto);padding:.5rem 1rem;border-radius:8px;font-size:.78rem;box-shadow:0 4px 12px rgba(0,0,0,.4);display:none}
 	.aviso.ver{display:block}
 	.aviso.error{border-left:3px solid var(--rojo)}
@@ -128,9 +138,13 @@
 			<button class="b an" data-a="pendiente" disabled>Pendiente</button>
 			<button class="b an" data-a="geoformas" disabled>Geoformas</button>
 			<button class="b an" data-a="curvatura" disabled>Curvatura</button>
+			<button class="b an" data-a="drenaje" disabled>Red de drenaje</button>
+			<button class="b an" data-a="twi" disabled>Humedad (TWI)</button>
+			<button class="b an" data-a="hand" disabled>Altura sobre cauce</button>
 		</div>
 		<div class="fila" style="margin-top:.5rem">
 			<button class="b" id="btn-exportar" disabled>⬇ GeoTIFF</button>
+			<button class="b" id="btn-perfil">📈 Perfil</button>
 			<button class="b" id="btn-compartir">🔗 Copiar enlace</button>
 			<button class="b" id="btn-limpiar">✕ Limpiar</button>
 		</div>
@@ -154,11 +168,21 @@
 <div id="mapa-cont">
 	<div id="map"></div>
 	<div class="aviso" id="aviso"></div>
+	<div id="perfil">
+		<div class="cab">
+			<span class="tit">Perfil topográfico</span>
+			<span class="met" id="perfil-met"></span>
+			<span class="cerrar" id="perfil-cerrar">✕</span>
+		</div>
+		<svg id="perfil-svg" viewBox="0 0 1000 140" preserveAspectRatio="none"></svg>
+	</div>
 </div>
 
 <script type="module">
-import init, { slope, hillshade_compute, geomorphons_compute, curvature_compute }
-	from './wasm/surtgis_wasm.js';
+import init, {
+	slope, hillshade_compute, geomorphons_compute, curvature_compute,
+	fill_depressions, flow_direction_d8, flow_accumulation_d8, twi_compute, hand_compute
+} from './wasm/surtgis_wasm.js';
 import { escribirGeoTIFF } from './geotiff-writer.js';
 
 // ---------- Constantes del DEM Copernicus GLO-30 ----------
@@ -258,7 +282,10 @@ const PALETAS = {
 	elevacion: v => rampa(v, [[0, 26, 112, 52], [.25, 168, 198, 90], [.5, 240, 220, 130], [.75, 170, 120, 70], [1, 245, 245, 245]]),
 	relieve: v => [v * 255, v * 255, v * 255],
 	pendiente: v => rampa(v, [[0, 34, 139, 34], [.35, 255, 235, 59], [.7, 255, 152, 0], [1, 183, 28, 28]]),
-	curvatura: v => rampa(v, [[0, 33, 102, 172], [.5, 247, 247, 247], [1, 178, 24, 43]])
+	curvatura: v => rampa(v, [[0, 33, 102, 172], [.5, 247, 247, 247], [1, 178, 24, 43]]),
+	drenaje: v => rampa(v, [[0, 245, 245, 235], [.45, 120, 190, 220], [.75, 30, 110, 190], [1, 8, 40, 110]]),
+	twi: v => rampa(v, [[0, 245, 240, 215], [.5, 110, 180, 150], [1, 15, 70, 110]]),
+	hand: v => rampa(v, [[0, 20, 80, 160], [.3, 130, 200, 220], [.6, 230, 225, 170], [1, 160, 120, 80]])
 };
 const GEOFORMAS = {
 	1: ['Plano', [211, 211, 211]], 2: ['Cima', [165, 0, 38]], 3: ['Cresta', [244, 109, 67]],
@@ -274,7 +301,20 @@ const ANALISIS = {
 	relieve:   { nombre: 'Relieve sombreado', fn: b => hillshade_compute(b, 315, 45),    pal: 'relieve',   unidad: '' },
 	pendiente: { nombre: 'Pendiente',         fn: b => slope(b, 'degrees'),              pal: 'pendiente', unidad: '°' },
 	geoformas: { nombre: 'Geoformas',         fn: b => geomorphons_compute(b, 1.0, 10),  pal: 'geoformas', unidad: '' },
-	curvatura: { nombre: 'Curvatura',         fn: b => curvature_compute(b, 'general'),  pal: 'curvatura', unidad: '' }
+	curvatura: { nombre: 'Curvatura',         fn: b => curvature_compute(b, 'general'),  pal: 'curvatura', unidad: '' },
+
+	// --- Hidrología ---
+	// La cadena clásica: rellenar depresiones, derivar direcciones de flujo y
+	// acumular. La acumulación abarca varios órdenes de magnitud, así que se
+	// representa en escala logarítmica; en escala lineal solo se vería el cauce
+	// principal y el resto quedaría plano.
+	drenaje: {
+		nombre: 'Red de drenaje',
+		fn: b => flow_accumulation_d8(flow_direction_d8(fill_depressions(b))),
+		pal: 'drenaje', unidad: ' celdas', log: true
+	},
+	twi:  { nombre: 'Humedad topográfica (TWI)', fn: b => twi_compute(b),      pal: 'twi',  unidad: '' },
+	hand: { nombre: 'Altura sobre el cauce',     fn: b => hand_compute(b, 500), pal: 'hand', unidad: ' m' }
 };
 
 // ---------- Gestión de capas ----------
@@ -392,9 +432,11 @@ function crearCapa(clave, cfg, raster, bytes, ms) {
 		leyenda = Object.values(GEOFORMAS).map(([n, [r, g, b]]) =>
 			`<span class="li"><span class="sw" style="background:rgb(${r},${g},${b})"></span>${n}</span>`).join('');
 	} else {
+		// Escala logarítmica cuando el rango abarca varios órdenes de magnitud.
+		const transf = cfg.log ? v => Math.log10(Math.max(1, v)) : v => v;
 		// Estiramiento por percentiles 2–98: un valor extremo de borde no aplasta el contraste.
 		const val = [];
-		for (let i = 0; i < raster.length; i += 3) if (Number.isFinite(raster[i])) val.push(raster[i]);
+		for (let i = 0; i < raster.length; i += 3) if (Number.isFinite(raster[i])) val.push(transf(raster[i]));
 		val.sort((a, b) => a - b);
 		let mn = val[Math.floor(val.length * .02)], mx = val[Math.floor(val.length * .98)];
 		if (!(mx > mn)) { mn = val[0]; mx = val[val.length - 1]; }
@@ -402,7 +444,7 @@ function crearCapa(clave, cfg, raster, bytes, ms) {
 		for (let i = 0; i < raster.length; i++) {
 			const v = raster[i];
 			if (!Number.isFinite(v)) { img.data[i * 4 + 3] = 0; continue; }
-			const t = Math.max(0, Math.min(1, (v - mn) / (mx - mn || 1)));
+			const t = Math.max(0, Math.min(1, (transf(v) - mn) / (mx - mn || 1)));
 			const [r, g, b] = pal(t);
 			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = 255;
 		}
@@ -410,7 +452,7 @@ function crearCapa(clave, cfg, raster, bytes, ms) {
 			const [r, g, b] = pal(i / 10); return `rgb(${r | 0},${g | 0},${b | 0})`;
 		}).join(',');
 		leyenda = `<div style="width:100%"><div class="barra" style="background:linear-gradient(90deg,${grad})"></div>
-			<div class="rango"><span>${mn.toFixed(1)}${cfg.unidad}</span><span>${mx.toFixed(1)}${cfg.unidad}</span></div></div>`;
+			<div class="rango"><span>${(cfg.log ? Math.pow(10, mn) : mn).toFixed(cfg.log ? 0 : 1)}${cfg.unidad}</span><span>${(cfg.log ? Math.pow(10, mx) : mx).toFixed(cfg.log ? 0 : 1)}${cfg.unidad}</span></div></div>`;
 	}
 	ctx.putImageData(img, 0, 0);
 
@@ -438,14 +480,37 @@ $('btn-sel').onclick = () => {
 	map.getContainer().classList.add('dibujando');
 	mostrarAviso('Arrastra sobre el mapa para definir el área');
 };
-map.on('mousedown', e => { if (!dibujando) return; inicio = e.latlng; });
+map.on('mousedown', e => {
+	if (modoPerfil) { perfilInicio = e.latlng; return; }
+	if (!dibujando) return;
+	inicio = e.latlng;
+});
 map.on('mousemove', e => {
+	if (modoPerfil && perfilInicio) {
+		const pts = [perfilInicio, e.latlng];
+		if (lineaTemporal) lineaTemporal.setLatLngs(pts);
+		else lineaTemporal = L.polyline(pts, { color: '#38bdf8', weight: 3, dashArray: '6 4' }).addTo(map);
+		return;
+	}
 	if (!dibujando || !inicio) return;
 	const b = L.latLngBounds(inicio, e.latlng);
 	if (rectTemporal) rectTemporal.setBounds(b);
 	else rectTemporal = L.rectangle(b, { color: '#0ea5e9', weight: 2, dashArray: '5 5', fillOpacity: .08 }).addTo(map);
 });
 map.on('mouseup', async e => {
+	if (modoPerfil && perfilInicio) {
+		modoPerfil = false;
+		map.dragging.enable();
+		map.getContainer().classList.remove('dibujando');
+		if (lineaTemporal) { map.removeLayer(lineaTemporal); lineaTemporal = null; }
+		if (lineaPerfil) map.removeLayer(lineaPerfil);
+		lineaPerfil = L.polyline([perfilInicio, e.latlng], { color: '#38bdf8', weight: 3 }).addTo(map);
+		const pf = calcularPerfil(perfilInicio, e.latlng);
+		perfilInicio = null;
+		if (pf) dibujarPerfil(pf);
+		else mostrarAviso('La línea debe quedar dentro del área seleccionada', true);
+		return;
+	}
 	if (!dibujando || !inicio) return;
 	dibujando = false;
 	map.dragging.enable();
@@ -491,6 +556,8 @@ async function seleccionar(bounds) {
 }
 
 function limpiar(todo = true) {
+	if (lineaPerfil) { map.removeLayer(lineaPerfil); lineaPerfil = null; }
+	$('perfil').classList.remove('ver');
 	capas.forEach(c => map.removeLayer(c.overlay));
 	capas.clear();
 	capaActiva = null;
@@ -522,6 +589,95 @@ $('btn-exportar').onclick = () => {
 
 document.querySelectorAll('.an').forEach(b => b.onclick = () => ejecutar(b.dataset.a));
 
+
+
+// ---------- Perfil topográfico ----------
+// Muestrea el modelo de elevación ya cargado en memoria a lo largo de una línea.
+// No requiere el motor ni descargas adicionales.
+let modoPerfil = false, perfilInicio = null, lineaTemporal = null, lineaPerfil = null;
+
+function elevacionEn(lat, lon) {
+	const b = recorte.bounds;
+	const fx = (lon - b.getWest()) / (b.getEast() - b.getWest());
+	const fy = (b.getNorth() - lat) / (b.getNorth() - b.getSouth());
+	const x = Math.round(fx * (recorte.ancho - 1));
+	const y = Math.round(fy * (recorte.alto - 1));
+	if (x < 0 || y < 0 || x >= recorte.ancho || y >= recorte.alto) return null;
+	const v = recorte.datos[y * recorte.ancho + x];
+	return Number.isFinite(v) ? v : null;
+}
+
+function calcularPerfil(a, b) {
+	const N = 240;
+	const largo = a.distanceTo(b);
+	const puntos = [];
+	for (let i = 0; i <= N; i++) {
+		const f = i / N;
+		const lat = a.lat + (b.lat - a.lat) * f;
+		const lon = a.lng + (b.lng - a.lng) * f;
+		const e = elevacionEn(lat, lon);
+		if (e !== null) puntos.push({ d: largo * f, e });
+	}
+	if (puntos.length < 2) return null;
+
+	let subida = 0, bajada = 0;
+	for (let i = 1; i < puntos.length; i++) {
+		const dif = puntos[i].e - puntos[i - 1].e;
+		if (dif > 0) subida += dif; else bajada -= dif;
+	}
+	const elevs = puntos.map(p => p.e);
+	return { puntos, largo, subida, bajada, min: Math.min.apply(null, elevs), max: Math.max.apply(null, elevs) };
+}
+
+function dibujarPerfil(pf) {
+	const W = 1000, H = 140, mIzq = 46, mDer = 8, mSup = 10, mInf = 20;
+	const x = d => mIzq + (d / pf.largo) * (W - mIzq - mDer);
+	const rango = (pf.max - pf.min) || 1;
+	const y = e => mSup + (1 - (e - pf.min) / rango) * (H - mSup - mInf);
+
+	const linea = pf.puntos.map((p, i) => `${i ? 'L' : 'M'}${x(p.d).toFixed(1)},${y(p.e).toFixed(1)}`).join('');
+	const area = `${linea}L${x(pf.largo).toFixed(1)},${H - mInf}L${mIzq},${H - mInf}Z`;
+
+	// tres marcas de altura y tres de distancia
+	const ejes = [0, .5, 1].map(f => {
+		const e = pf.min + rango * (1 - f);
+		const yy = mSup + f * (H - mSup - mInf);
+		return `<line x1="${mIzq}" y1="${yy}" x2="${W - mDer}" y2="${yy}" stroke="#334155" stroke-width="1"/>
+			<text x="${mIzq - 5}" y="${yy + 3}" fill="#94a3b8" font-size="10" text-anchor="end">${e.toFixed(0)}</text>`;
+	}).join('') + [0, .5, 1].map(f => {
+		const d = pf.largo * f, xx = x(d);
+		return `<text x="${xx}" y="${H - 6}" fill="#94a3b8" font-size="10" text-anchor="${f === 0 ? 'start' : f === 1 ? 'end' : 'middle'}">${(d / 1000).toFixed(2)} km</text>`;
+	}).join('');
+
+	$('perfil-svg').innerHTML = `
+		<defs><linearGradient id="gperfil" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0%" stop-color="#0ea5e9" stop-opacity=".55"/>
+			<stop offset="100%" stop-color="#0ea5e9" stop-opacity=".05"/>
+		</linearGradient></defs>
+		${ejes}
+		<path d="${area}" fill="url(#gperfil)"/>
+		<path d="${linea}" fill="none" stroke="#38bdf8" stroke-width="1.8"/>`;
+
+	$('perfil-met').innerHTML =
+		`Largo <b>${(pf.largo / 1000).toFixed(2)} km</b>` +
+		`Desnivel <b>${(pf.max - pf.min).toFixed(0)} m</b>` +
+		`Cota <b>${pf.min.toFixed(0)}–${pf.max.toFixed(0)} m</b>` +
+		`Ascenso <b>${pf.subida.toFixed(0)} m</b>` +
+		`Descenso <b>${pf.bajada.toFixed(0)} m</b>`;
+	$('perfil').classList.add('ver');
+}
+
+$('btn-perfil').onclick = () => {
+	if (!recorte) return;
+	modoPerfil = true;
+	map.dragging.disable();
+	map.getContainer().classList.add('dibujando');
+	mostrarAviso('Arrastra una línea sobre el área para ver su perfil');
+};
+$('perfil-cerrar').onclick = () => {
+	$('perfil').classList.remove('ver');
+	if (lineaPerfil) { map.removeLayer(lineaPerfil); lineaPerfil = null; }
+};
 
 // ---------- Áreas de ejemplo ----------
 // Un visitante que llega sin conocer Chile no sabe dónde dibujar; esto lo lleva
