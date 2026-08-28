@@ -51,6 +51,20 @@
 	.barra{height:10px;border-radius:3px;margin-top:.4rem}
 	.rango{display:flex;justify-content:space-between;font-size:.6rem;color:var(--gris);margin-top:.2rem}
 
+	/* Panel de capas */
+	.capa{background:var(--panel2);border-radius:8px;padding:.5rem .6rem;margin-bottom:.45rem;border-left:3px solid var(--borde)}
+	.capa.sel{border-left-color:var(--azul)}
+	.capa .cab{display:flex;align-items:center;gap:.45rem}
+	.capa .ojo{cursor:pointer;font-size:.85rem;line-height:1;opacity:.35;user-select:none}
+	.capa.visible .ojo{opacity:1}
+	.capa .nom{flex:1;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+	.capa .quitar{cursor:pointer;color:var(--gris);font-size:.8rem;line-height:1}
+	.capa .quitar:hover{color:var(--rojo)}
+	.capa .op{display:flex;align-items:center;gap:.4rem;margin-top:.35rem}
+	.capa .op input{flex:1;accent-color:var(--azul);height:3px}
+	.capa .op span{font-size:.6rem;color:var(--gris);min-width:2.2rem;text-align:right}
+	#sin-capas{font-size:.72rem;color:var(--gris);font-style:italic}
+
 	.pie{padding:.9rem 1.2rem;font-size:.62rem;color:var(--gris);margin-top:auto;line-height:1.6}
 	.pie a{color:var(--azul);text-decoration:none}
 
@@ -71,7 +85,7 @@
 		<div class="s">Territorio Digital · motor SurtGIS en tu navegador</div>
 	</div>
 
-	<div class="bloque">
+	<div class="bloque" id="bloque-ayuda">
 		<h2>Cómo usarlo</h2>
 		<div class="paso"><span class="num">1</span><div>Presiona <b>Seleccionar área</b> y arrastra un rectángulo sobre cualquier lugar de Chile.</div></div>
 		<div class="paso"><span class="num">2</span><div>Se descarga solo ese recorte del modelo de elevación, no el archivo completo.</div></div>
@@ -98,6 +112,7 @@
 	<div class="bloque" id="bloque-analisis" style="display:none">
 		<h2>Análisis</h2>
 		<div class="fila">
+			<button class="b an" data-a="elevacion" disabled>Elevación</button>
 			<button class="b an" data-a="relieve" disabled>Relieve</button>
 			<button class="b an" data-a="pendiente" disabled>Pendiente</button>
 			<button class="b an" data-a="geoformas" disabled>Geoformas</button>
@@ -107,6 +122,12 @@
 			<button class="b" id="btn-exportar" disabled>⬇ GeoTIFF</button>
 			<button class="b" id="btn-limpiar">✕ Limpiar</button>
 		</div>
+	</div>
+
+	<div class="bloque" id="bloque-capas" style="display:none">
+		<h2>Capas</h2>
+		<div id="lista-capas"></div>
+		<div id="sin-capas">Aún no hay capas. Elige un análisis.</div>
 		<div id="leyenda"></div>
 	</div>
 
@@ -154,9 +175,7 @@ function mostrarAviso(msg, esError = false) {
 // ---------- Estado ----------
 let listo = false;
 let recorte = null;      // { datos, ancho, alto, bounds, mX, mY }
-let capaAnalisis = null;
 let rectSeleccion = null;
-let ultimoResultado = null;
 
 // ---------- Nombre del tile que contiene un punto ----------
 // Los tiles se nombran por su esquina: S37_W072 cubre lat -37..-36, lon -72..-71.
@@ -223,6 +242,8 @@ function rampa(v, paradas) {
 	return paradas[paradas.length - 1].slice(1);
 }
 const PALETAS = {
+	// Hipsométrica clásica: verde en cotas bajas, pardo en altura, blanco en cumbres.
+	elevacion: v => rampa(v, [[0, 26, 112, 52], [.25, 168, 198, 90], [.5, 240, 220, 130], [.75, 170, 120, 70], [1, 245, 245, 245]]),
 	relieve: v => [v * 255, v * 255, v * 255],
 	pendiente: v => rampa(v, [[0, 34, 139, 34], [.35, 255, 235, 59], [.7, 255, 152, 0], [1, 183, 28, 28]]),
 	curvatura: v => rampa(v, [[0, 33, 102, 172], [.5, 247, 247, 247], [1, 178, 24, 43]])
@@ -234,58 +255,136 @@ const GEOFORMAS = {
 	9: ['Valle', [69, 117, 180]], 10: ['Depresión', [49, 54, 149]]
 };
 
-// ---------- Análisis ----------
+// ---------- Análisis disponibles ----------
+// fn === null significa que se dibuja el propio modelo de elevación, sin pasar por el motor.
 const ANALISIS = {
-	relieve:   { nombre: 'Relieve sombreado', fn: b => hillshade_compute(b, 315, 45), pal: 'relieve', unidad: '' },
-	pendiente: { nombre: 'Pendiente',         fn: b => slope(b, 'degrees'),           pal: 'pendiente', unidad: '°' },
-	geoformas: { nombre: 'Geoformas',         fn: b => geomorphons_compute(b, 1.0, 10), pal: 'geoformas', unidad: '' },
-	curvatura: { nombre: 'Curvatura',         fn: b => curvature_compute(b, 'general'), pal: 'curvatura', unidad: '' }
+	elevacion: { nombre: 'Elevación',         fn: null,                                  pal: 'elevacion', unidad: ' m' },
+	relieve:   { nombre: 'Relieve sombreado', fn: b => hillshade_compute(b, 315, 45),    pal: 'relieve',   unidad: '' },
+	pendiente: { nombre: 'Pendiente',         fn: b => slope(b, 'degrees'),              pal: 'pendiente', unidad: '°' },
+	geoformas: { nombre: 'Geoformas',         fn: b => geomorphons_compute(b, 1.0, 10),  pal: 'geoformas', unidad: '' },
+	curvatura: { nombre: 'Curvatura',         fn: b => curvature_compute(b, 'general'),  pal: 'curvatura', unidad: '' }
 };
 
+// ---------- Gestión de capas ----------
+const capas = new Map();   // clave -> { nombre, overlay, leyenda, bytes, visible, opacidad }
+let capaActiva = null;
+let zSiguiente = 400;
+
+function dibujarPanelCapas() {
+	const lista = $('lista-capas');
+	const vacio = $('sin-capas');
+	lista.innerHTML = '';
+	vacio.style.display = capas.size ? 'none' : 'block';
+	$('bloque-capas').style.display = recorte ? 'block' : 'none';
+
+	// Las últimas calculadas se muestran arriba, igual que su orden de apilado.
+	[...capas.entries()].reverse().forEach(([clave, c]) => {
+		const div = document.createElement('div');
+		div.className = 'capa' + (c.visible ? ' visible' : '') + (clave === capaActiva ? ' sel' : '');
+		div.innerHTML = `
+			<div class="cab">
+				<span class="ojo" title="Mostrar u ocultar">${c.visible ? '👁' : '⚊'}</span>
+				<span class="nom" title="${c.nombre}">${c.nombre}</span>
+				<span class="quitar" title="Quitar capa">✕</span>
+			</div>
+			<div class="op">
+				<input type="range" min="0" max="100" value="${Math.round(c.opacidad * 100)}">
+				<span>${Math.round(c.opacidad * 100)}%</span>
+			</div>`;
+
+		div.querySelector('.ojo').onclick = () => {
+			c.visible = !c.visible;
+			c.overlay.setOpacity(c.visible ? c.opacidad : 0);
+			dibujarPanelCapas();
+		};
+		div.querySelector('.nom').onclick = () => { capaActiva = clave; refrescarLeyenda(); dibujarPanelCapas(); };
+		div.querySelector('.quitar').onclick = () => {
+			map.removeLayer(c.overlay);
+			capas.delete(clave);
+			if (capaActiva === clave) capaActiva = [...capas.keys()].pop() || null;
+			document.querySelector(`.an[data-a="${clave}"]`)?.classList.remove('activo');
+			refrescarLeyenda(); dibujarPanelCapas();
+			$('btn-exportar').disabled = !capaActiva || !capas.get(capaActiva)?.bytes;
+		};
+		const rango = div.querySelector('input');
+		rango.oninput = () => {
+			c.opacidad = rango.value / 100;
+			div.querySelector('.op span').textContent = rango.value + '%';
+			if (c.visible) c.overlay.setOpacity(c.opacidad);
+		};
+		lista.appendChild(div);
+	});
+}
+
+function refrescarLeyenda() {
+	const el = $('leyenda');
+	const c = capaActiva && capas.get(capaActiva);
+	if (!c) { el.style.display = 'none'; return; }
+	el.innerHTML = c.leyenda;
+	el.style.display = 'flex';
+	$('btn-exportar').disabled = !c.bytes;
+}
+
+// ---------- Ejecución de un análisis ----------
 async function ejecutar(clave) {
 	if (!recorte) return;
+
+	// Si ya existe, no se recalcula: se selecciona y se hace visible.
+	if (capas.has(clave)) {
+		const c = capas.get(clave);
+		c.visible = true;
+		c.overlay.setOpacity(c.opacidad);
+		c.overlay.setZIndex(++zSiguiente);
+		capaActiva = clave;
+		refrescarLeyenda(); dibujarPanelCapas();
+		return;
+	}
+
 	const cfg = ANALISIS[clave];
-	document.querySelectorAll('.an').forEach(b => b.classList.toggle('activo', b.dataset.a === clave));
 	estado.textContent = 'Calculando…';
 	await new Promise(r => setTimeout(r, 20));
 
 	try {
-		const bytes = escribirGeoTIFF(recorte.datos, recorte.ancho, recorte.alto, recorte.mX, recorte.mY);
-		const t0 = performance.now();
-		const salida = cfg.fn(bytes);
-		const ms = performance.now() - t0;
-
-		const t = await GeoTIFF.fromArrayBuffer(salida.buffer.slice(salida.byteOffset, salida.byteOffset + salida.byteLength));
-		const [raster] = await (await t.getImage()).readRasters();
-		ultimoResultado = { bytes: salida, nombre: cfg.nombre };
-		pintar(raster, recorte.ancho, recorte.alto, cfg, ms);
+		let raster, ms = 0;
+		if (cfg.fn === null) {
+			raster = recorte.datos;   // el DEM ya está en memoria
+		} else {
+			const bytes = escribirGeoTIFF(recorte.datos, recorte.ancho, recorte.alto, recorte.mX, recorte.mY);
+			const t0 = performance.now();
+			const salida = cfg.fn(bytes);
+			ms = performance.now() - t0;
+			const t = await GeoTIFF.fromArrayBuffer(salida.buffer.slice(salida.byteOffset, salida.byteOffset + salida.byteLength));
+			raster = (await (await t.getImage()).readRasters())[0];
+			var bytesSalida = salida;
+		}
+		crearCapa(clave, cfg, raster, typeof bytesSalida !== 'undefined' ? bytesSalida : null, ms);
 	} catch (e) {
 		estado.innerHTML = `<span style="color:var(--rojo)">Error: ${e.message || e}</span>`;
 	}
 }
 
-function pintar(raster, w, h, cfg, ms) {
+function crearCapa(clave, cfg, raster, bytes, ms) {
+	const w = recorte.ancho, h = recorte.alto;
 	const cv = document.createElement('canvas');
 	cv.width = w; cv.height = h;
 	const ctx = cv.getContext('2d');
 	const img = ctx.createImageData(w, h);
-	const leyenda = $('leyenda');
-	let mn = 0, mx = 0;
+	let leyenda = '';
 
 	if (cfg.pal === 'geoformas') {
 		for (let i = 0; i < raster.length; i++) {
 			const c = GEOFORMAS[Math.round(raster[i])];
 			if (!c) { img.data[i * 4 + 3] = 0; continue; }
-			img.data[i * 4] = c[1][0]; img.data[i * 4 + 1] = c[1][1]; img.data[i * 4 + 2] = c[1][2]; img.data[i * 4 + 3] = 225;
+			img.data[i * 4] = c[1][0]; img.data[i * 4 + 1] = c[1][1]; img.data[i * 4 + 2] = c[1][2]; img.data[i * 4 + 3] = 255;
 		}
-		leyenda.innerHTML = Object.values(GEOFORMAS).map(([n, [r, g, b]]) =>
+		leyenda = Object.values(GEOFORMAS).map(([n, [r, g, b]]) =>
 			`<span class="li"><span class="sw" style="background:rgb(${r},${g},${b})"></span>${n}</span>`).join('');
 	} else {
-		// Estiramiento por percentiles 2–98: evita que un valor extremo de borde aplaste el contraste.
+		// Estiramiento por percentiles 2–98: un valor extremo de borde no aplasta el contraste.
 		const val = [];
 		for (let i = 0; i < raster.length; i += 3) if (Number.isFinite(raster[i])) val.push(raster[i]);
 		val.sort((a, b) => a - b);
-		mn = val[Math.floor(val.length * .02)]; mx = val[Math.floor(val.length * .98)];
+		let mn = val[Math.floor(val.length * .02)], mx = val[Math.floor(val.length * .98)];
 		if (!(mx > mn)) { mn = val[0]; mx = val[val.length - 1]; }
 		const pal = PALETAS[cfg.pal];
 		for (let i = 0; i < raster.length; i++) {
@@ -293,22 +392,28 @@ function pintar(raster, w, h, cfg, ms) {
 			if (!Number.isFinite(v)) { img.data[i * 4 + 3] = 0; continue; }
 			const t = Math.max(0, Math.min(1, (v - mn) / (mx - mn || 1)));
 			const [r, g, b] = pal(t);
-			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = 225;
+			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = 255;
 		}
 		const grad = Array.from({ length: 11 }, (_, i) => {
-			const [r, g, b] = pal(i / 10); return `rgb(${r|0},${g|0},${b|0})`;
+			const [r, g, b] = pal(i / 10); return `rgb(${r | 0},${g | 0},${b | 0})`;
 		}).join(',');
-		leyenda.innerHTML = `<div style="width:100%"><div class="barra" style="background:linear-gradient(90deg,${grad})"></div>
+		leyenda = `<div style="width:100%"><div class="barra" style="background:linear-gradient(90deg,${grad})"></div>
 			<div class="rango"><span>${mn.toFixed(1)}${cfg.unidad}</span><span>${mx.toFixed(1)}${cfg.unidad}</span></div></div>`;
 	}
 	ctx.putImageData(img, 0, 0);
-	leyenda.style.display = 'flex';
 
-	if (capaAnalisis) map.removeLayer(capaAnalisis);
-	capaAnalisis = L.imageOverlay(cv.toDataURL(), recorte.bounds, { opacity: .8 }).addTo(map);
-	$('btn-exportar').disabled = false;
+	const opacidad = 0.85;
+	const overlay = L.imageOverlay(cv.toDataURL(), recorte.bounds, { opacity: opacidad, zIndex: ++zSiguiente }).addTo(map);
 
-	estado.innerHTML = `<b style="color:var(--verde)">${cfg.nombre}</b> — calculado en <b style="color:var(--azul)">${ms.toFixed(0)} ms</b> en tu navegador`;
+	capas.set(clave, { nombre: cfg.nombre, overlay, leyenda, bytes, visible: true, opacidad });
+	capaActiva = clave;
+	document.querySelector(`.an[data-a="${clave}"]`)?.classList.add('activo');
+	refrescarLeyenda();
+	dibujarPanelCapas();
+
+	estado.innerHTML = cfg.fn === null
+		? `<b style="color:var(--verde)">${cfg.nombre}</b> — modelo de elevación cargado`
+		: `<b style="color:var(--verde)">${cfg.nombre}</b> — calculado en <b style="color:var(--azul)">${ms.toFixed(0)} ms</b> en tu navegador`;
 }
 
 // ---------- Selección de área por arrastre ----------
@@ -356,8 +461,10 @@ async function seleccionar(bounds) {
 		$('bloque-datos').style.display = 'block';
 		$('bloque-analisis').style.display = 'block';
 		document.querySelectorAll('.an').forEach(b => b.disabled = false);
-		estado.textContent = 'Listo. Elige un análisis.';
+		$('bloque-ayuda').style.display = 'none';
 		map.fitBounds(bounds, { padding: [40, 40] });
+		// Mostrar el modelo de elevación de entrada, para que el área nunca quede vacía.
+		await ejecutar('elevacion');
 	} catch (e) {
 		estado.innerHTML = `<span style="color:var(--ambar)">${e.message || e}</span>`;
 		mostrarAviso(e.message || String(e), true);
@@ -365,26 +472,31 @@ async function seleccionar(bounds) {
 }
 
 function limpiar(todo = true) {
-	if (capaAnalisis) { map.removeLayer(capaAnalisis); capaAnalisis = null; }
+	capas.forEach(c => map.removeLayer(c.overlay));
+	capas.clear();
+	capaActiva = null;
+	dibujarPanelCapas();
 	if (rectSeleccion) { map.removeLayer(rectSeleccion); rectSeleccion = null; }
 	$('leyenda').style.display = 'none';
 	$('btn-exportar').disabled = true;
 	document.querySelectorAll('.an').forEach(b => b.classList.remove('activo'));
 	if (todo) {
-		recorte = null; ultimoResultado = null;
+		recorte = null;
 		$('bloque-datos').style.display = 'none';
 		$('bloque-analisis').style.display = 'none';
+		$('bloque-ayuda').style.display = 'block';
 		estado.textContent = 'Selecciona un área para empezar.';
 	}
 }
 $('btn-limpiar').onclick = () => limpiar(true);
 
 $('btn-exportar').onclick = () => {
-	if (!ultimoResultado) return;
-	const blob = new Blob([ultimoResultado.bytes], { type: 'image/tiff' });
+	const c = capaActiva && capas.get(capaActiva);
+	if (!c || !c.bytes) return;
+	const blob = new Blob([c.bytes], { type: 'image/tiff' });
 	const a = document.createElement('a');
 	a.href = URL.createObjectURL(blob);
-	a.download = ultimoResultado.nombre.toLowerCase().replace(/\s+/g, '_') + '.tif';
+	a.download = c.nombre.toLowerCase().replace(/\s+/g, '_') + '.tif';
 	a.click();
 	URL.revokeObjectURL(a.href);
 };
