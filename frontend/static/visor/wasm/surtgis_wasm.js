@@ -668,7 +668,7 @@ export function msavi(nir_bytes, red_bytes) {
 }
 
 /**
- * Compute multidirectional hillshade (6 azimuths combined).
+ * Compute multidirectional hillshade (Mark 1992: 4 azimuths, GDAL-compatible).
  * @param {Uint8Array} tiff_bytes
  * @returns {Uint8Array}
  */
@@ -1012,6 +1012,41 @@ export function slope(tiff_bytes, units) {
 }
 
 /**
+ * Evaluate an arbitrary spectral-index formula over named bands.
+ *
+ * Covers the full grammar of the Awesome Spectral Indices catalogue
+ * (Montero et al., 2023): `+`, `-`, `*`, `/`, `**` (right-associative
+ * power), parentheses, unary minus and numeric constants. Band names in
+ * the formula follow the caller's `band_names` — use the ASI convention
+ * (`N`, `R`, `G`, `B`, `RE1`..`RE3`, `N2`, `S1`, `S2`, `A`, `WV`) to run
+ * catalogue formulas verbatim, e.g. `"(N - R)/(N + R)"` for NDVI.
+ *
+ * `band_names[i]` names the band decoded from `band_tiffs[i]`; the two
+ * arrays must have the same length and every GeoTIFF the same dimensions.
+ * Nodata (NaN or the declared nodata value) in any referenced band and
+ * division by zero both produce NaN in the output.
+ * @param {string} formula
+ * @param {string[]} band_names
+ * @param {Uint8Array[]} band_tiffs
+ * @returns {Uint8Array}
+ */
+export function spectral_index(formula, band_names, band_tiffs) {
+    const ptr0 = passStringToWasm0(formula, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayJsValueToWasm0(band_names, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArrayJsValueToWasm0(band_tiffs, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.spectral_index(ptr0, len0, ptr1, len1, ptr2, len2);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v4 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v4;
+}
+
+/**
  * Denoise DEM using 2D-SSA. `window`: window size, `components`: number of signal components.
  * @param {Uint8Array} tiff_bytes
  * @param {number} window
@@ -1104,6 +1139,24 @@ export function uncertainty_slope(tiff_bytes, dem_rmse) {
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
+        __wbg___wbindgen_string_get_395e606bd0ee4427: function(arg0, arg1) {
+            const obj = arg1;
+            const ret = typeof(obj) === 'string' ? obj : undefined;
+            var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            var len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
+        __wbg___wbindgen_throw_6ddd609b62940d55: function(arg0, arg1) {
+            throw new Error(getStringFromWasm0(arg0, arg1));
+        },
+        __wbg_length_ea16607d7b61445b: function(arg0) {
+            const ret = arg0.length;
+            return ret;
+        },
+        __wbg_prototypesetcall_d62e5099504357e6: function(arg0, arg1, arg2) {
+            Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
+        },
         __wbindgen_cast_0000000000000001: function(arg0, arg1) {
             // Cast intrinsic for `Ref(String) -> Externref`.
             const ret = getStringFromWasm0(arg0, arg1);
@@ -1125,9 +1178,23 @@ function __wbg_get_imports() {
     };
 }
 
+function addToExternrefTable0(obj) {
+    const idx = wasm.__externref_table_alloc();
+    wasm.__wbindgen_externrefs.set(idx, obj);
+    return idx;
+}
+
 function getArrayU8FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
+
+let cachedDataViewMemory0 = null;
+function getDataViewMemory0() {
+    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
+        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
+    }
+    return cachedDataViewMemory0;
 }
 
 function getStringFromWasm0(ptr, len) {
@@ -1143,10 +1210,24 @@ function getUint8ArrayMemory0() {
     return cachedUint8ArrayMemory0;
 }
 
+function isLikeNone(x) {
+    return x === undefined || x === null;
+}
+
 function passArray8ToWasm0(arg, malloc) {
     const ptr = malloc(arg.length * 1, 1) >>> 0;
     getUint8ArrayMemory0().set(arg, ptr / 1);
     WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    for (let i = 0; i < array.length; i++) {
+        const add = addToExternrefTable0(array[i]);
+        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
+    }
+    WASM_VECTOR_LEN = array.length;
     return ptr;
 }
 
@@ -1226,6 +1307,7 @@ let wasmModule, wasm;
 function __wbg_finalize_init(instance, module) {
     wasm = instance.exports;
     wasmModule = module;
+    cachedDataViewMemory0 = null;
     cachedUint8ArrayMemory0 = null;
     wasm.__wbindgen_start();
     return wasm;

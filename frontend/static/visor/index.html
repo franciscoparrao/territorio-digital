@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="./leaflet.css">
 <script src="./leaflet.js"></script>
 <script src="./geotiff.js"></script>
+<script src="./proj4.js"></script>
 <style>
 	:root{
 		--azul:#0ea5e9; --azul-osc:#0369a1; --panel:#0f172a; --panel2:#1e293b;
@@ -50,6 +51,18 @@
 	.sw{width:10px;height:10px;border-radius:2px;display:inline-block}
 	.barra{height:10px;border-radius:3px;margin-top:.4rem}
 	.rango{display:flex;justify-content:space-between;font-size:.6rem;color:var(--gris);margin-top:.2rem}
+
+	#escena{background:var(--panel2);border-radius:8px;padding:.5rem .65rem;font-size:.72rem;margin-bottom:.5rem;display:none}
+	#escena.ver{display:block}
+	#escena b{color:var(--azul)}
+	#buscar-idx{width:100%;background:var(--panel2);border:1px solid var(--borde);border-radius:6px;color:var(--texto);padding:.4rem .55rem;font-size:.75rem;margin-bottom:.4rem}
+	#buscar-idx::placeholder{color:var(--gris)}
+	#lista-idx{max-height:190px;overflow-y:auto}
+	.idx{padding:.35rem .5rem;border-radius:5px;cursor:pointer;font-size:.72rem;border-left:2px solid transparent}
+	.idx:hover{background:var(--panel2);border-left-color:var(--azul)}
+	.idx .sn{font-weight:700;color:var(--texto)}
+	.idx .ln{color:var(--gris);font-size:.65rem}
+	.idx .dom{float:right;font-size:.58rem;color:var(--gris);text-transform:uppercase}
 
 	.ejemplos{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}
 	.ej{flex:1;min-width:calc(33% - .27rem);background:transparent;border:1px dashed var(--borde);color:var(--gris);border-radius:6px;padding:.4rem .2rem;font-size:.68rem;cursor:pointer}
@@ -150,6 +163,16 @@
 		</div>
 	</div>
 
+	<div class="bloque" id="bloque-sat" style="display:none">
+		<h2>Imagen satelital <span style="color:var(--azul)">Sentinel-2</span></h2>
+		<div class="fila">
+			<button class="b" id="btn-escena" style="min-width:100%">Buscar escena reciente</button>
+		</div>
+		<div id="escena"></div>
+		<input id="buscar-idx" placeholder="Buscar índice: ndvi, incendio, agua…" autocomplete="off">
+		<div id="lista-idx"></div>
+	</div>
+
 	<div class="bloque" id="bloque-capas" style="display:none">
 		<h2>Capas</h2>
 		<div id="lista-capas"></div>
@@ -181,8 +204,10 @@
 <script type="module">
 import init, {
 	slope, hillshade_compute, geomorphons_compute, curvature_compute,
-	fill_depressions, flow_direction_d8, flow_accumulation_d8, twi_compute, hand_compute
+	fill_depressions, flow_direction_d8, flow_accumulation_d8, twi_compute, hand_compute,
+	spectral_index
 } from './wasm/surtgis_wasm.js';
+import { buscarEscenas, leerBandas } from './sentinel.js';
 import { escribirGeoTIFF } from './geotiff-writer.js';
 
 // ---------- Constantes del DEM Copernicus GLO-30 ----------
@@ -285,7 +310,8 @@ const PALETAS = {
 	curvatura: v => rampa(v, [[0, 33, 102, 172], [.5, 247, 247, 247], [1, 178, 24, 43]]),
 	drenaje: v => rampa(v, [[0, 245, 245, 235], [.45, 120, 190, 220], [.75, 30, 110, 190], [1, 8, 40, 110]]),
 	twi: v => rampa(v, [[0, 245, 240, 215], [.5, 110, 180, 150], [1, 15, 70, 110]]),
-	hand: v => rampa(v, [[0, 20, 80, 160], [.3, 130, 200, 220], [.6, 230, 225, 170], [1, 160, 120, 80]])
+	hand: v => rampa(v, [[0, 20, 80, 160], [.3, 130, 200, 220], [.6, 230, 225, 170], [1, 160, 120, 80]]),
+	indice: v => rampa(v, [[0, 165, 42, 42], [.35, 222, 184, 135], [.6, 173, 209, 128], [1, 20, 100, 40]])
 };
 const GEOFORMAS = {
 	1: ['Plano', [211, 211, 211]], 2: ['Cima', [165, 0, 38]], 3: ['Cresta', [244, 109, 67]],
@@ -415,8 +441,8 @@ async function ejecutar(clave) {
 	}
 }
 
-function crearCapa(clave, cfg, raster, bytes, ms) {
-	const w = recorte.ancho, h = recorte.alto;
+function crearCapa(clave, cfg, raster, bytes, ms, dim) {
+	const w = dim ? dim.ancho : recorte.ancho, h = dim ? dim.alto : recorte.alto;
 	const cv = document.createElement('canvas');
 	cv.width = w; cv.height = h;
 	const ctx = cv.getContext('2d');
@@ -544,6 +570,7 @@ async function seleccionar(bounds) {
 		$('d-px').textContent = (recorte.ancho * recorte.alto).toLocaleString('es-CL');
 		$('bloque-datos').style.display = 'block';
 		$('bloque-analisis').style.display = 'block';
+		$('bloque-sat').style.display = 'block';
 		document.querySelectorAll('.an').forEach(b => b.disabled = false);
 		$('bloque-ayuda').style.display = 'none';
 		map.fitBounds(bounds, { padding: [40, 40] });
@@ -570,6 +597,8 @@ function limpiar(todo = true) {
 		recorte = null;
 		$('bloque-datos').style.display = 'none';
 		$('bloque-analisis').style.display = 'none';
+		$('bloque-sat').style.display = 'none';
+		escenaActual = null; $('escena').className = '';
 		$('bloque-ayuda').style.display = 'block';
 		estado.textContent = 'Selecciona un área para empezar.';
 	}
@@ -590,6 +619,103 @@ $('btn-exportar').onclick = () => {
 document.querySelectorAll('.an').forEach(b => b.onclick = () => ejecutar(b.dataset.a));
 
 
+
+
+// ---------- Sentinel-2 e índices espectrales ----------
+// El catálogo Awesome Spectral Indices (Montero et al., Scientific Data 2023)
+// no vive en el motor: SurtGIS solo evalúa la fórmula que recibe. Así el
+// catálogo se actualiza sin recompilar y sirve para fórmulas propias.
+let CATALOGO = {};
+let escenaActual = null;
+
+const DOMINIOS = {
+	vegetation: 'vegetación', water: 'agua', burn: 'incendio',
+	urban: 'urbano', soil: 'suelo', snow: 'nieve', cloud: 'nubes', kernel: 'kernel'
+};
+
+fetch('./indices.json').then(r => r.json()).then(c => { CATALOGO = c; listarIndices(''); }).catch(() => {});
+
+// Los nombres de banda se derivan de la fórmula en orden de aparición y se
+// mapean posicionalmente contra los buffers, sin filtrar: si falta una banda
+// el error la nombra en vez de correr la correspondencia.
+function bandasDeFormula(formula) {
+	const vistas = [];
+	for (const t of formula.match(/[A-Za-z_][A-Za-z0-9_]*/g) || []) {
+		if (!vistas.includes(t)) vistas.push(t);
+	}
+	return vistas;
+}
+
+function listarIndices(filtro) {
+	const cont = $('lista-idx');
+	const f = filtro.trim().toLowerCase();
+	const entradas = Object.entries(CATALOGO).filter(([sn, v]) =>
+		!f || sn.toLowerCase().includes(f) || v.n.toLowerCase().includes(f) ||
+		(DOMINIOS[v.d] || v.d).includes(f)
+	).slice(0, 60);
+
+	cont.innerHTML = entradas.length
+		? entradas.map(([sn, v]) =>
+			`<div class="idx" data-sn="${sn}"><span class="dom">${DOMINIOS[v.d] || v.d}</span>
+			 <div class="sn">${sn}</div><div class="ln">${v.n}</div></div>`).join('')
+		: '<div class="idx"><span class="ln">Sin coincidencias</span></div>';
+
+	cont.querySelectorAll('.idx[data-sn]').forEach(el =>
+		el.onclick = () => calcularIndice(el.dataset.sn));
+}
+$('buscar-idx').oninput = e => listarIndices(e.target.value);
+
+$('btn-escena').onclick = async () => {
+	if (!recorte) return;
+	const caja = $('escena');
+	caja.className = 'ver';
+	caja.textContent = 'Buscando escenas…';
+	try {
+		const escenas = await buscarEscenas(recorte.bounds, 30, 8);
+		if (!escenas.length) { caja.textContent = 'No hay escenas con poca nubosidad para esta área.'; return; }
+		escenaActual = escenas[0];
+		caja.innerHTML = `Escena del <b>${escenaActual.fecha}</b> · nubosidad <b>${(escenaActual.nubes ?? 0).toFixed(1)}%</b><br>
+			<span style="color:var(--gris)">Elige un índice de la lista para calcularlo sobre esta imagen.</span>`;
+	} catch (e) {
+		caja.innerHTML = `<span style="color:var(--rojo)">${e.message || e}</span>`;
+	}
+};
+
+async function calcularIndice(shortName) {
+	if (!recorte) return;
+	const idx = CATALOGO[shortName];
+	if (!idx) return;
+	if (!escenaActual) { mostrarAviso('Primero busca una escena satelital', true); return; }
+	if (capas.has('idx_' + shortName)) { await ejecutar('idx_' + shortName); return; }
+
+	estado.textContent = `Descargando bandas para ${shortName}…`;
+	try {
+		const nombres = bandasDeFormula(idx.f);
+		const { bandas, ancho, alto } = await leerBandas(escenaActual, recorte.bounds, nombres);
+
+		// Las bandas ya vienen remuestreadas al mismo tamaño; la escala de celda
+		// es irrelevante para un índice espectral, que es aritmética por píxel.
+		const tiffs = nombres.map(n => escribirGeoTIFF(bandas[n], ancho, alto, 10, 10));
+
+		estado.textContent = `Calculando ${shortName}…`;
+		await new Promise(r => setTimeout(r, 20));
+		const t0 = performance.now();
+		const salida = spectral_index(idx.f, nombres, tiffs);
+		const ms = performance.now() - t0;
+
+		const t = await GeoTIFF.fromArrayBuffer(salida.buffer.slice(salida.byteOffset, salida.byteOffset + salida.byteLength));
+		const raster = (await (await t.getImage()).readRasters())[0];
+
+		const cfg = {
+			nombre: `${shortName} · ${escenaActual.fecha}`,
+			pal: idx.d === 'water' ? 'twi' : idx.d === 'burn' ? 'pendiente' : 'indice',
+			unidad: ''
+		};
+		crearCapa('idx_' + shortName, cfg, raster, salida, ms, { ancho, alto });
+	} catch (e) {
+		estado.innerHTML = `<span style="color:var(--rojo)">${e.message || e}</span>`;
+	}
+}
 
 // ---------- Perfil topográfico ----------
 // Muestrea el modelo de elevación ya cargado en memoria a lo largo de una línea.
