@@ -51,6 +51,12 @@
 	.barra{height:10px;border-radius:3px;margin-top:.4rem}
 	.rango{display:flex;justify-content:space-between;font-size:.6rem;color:var(--gris);margin-top:.2rem}
 
+	.ejemplos{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}
+	.ej{flex:1;min-width:calc(33% - .27rem);background:transparent;border:1px dashed var(--borde);color:var(--gris);border-radius:6px;padding:.4rem .2rem;font-size:.68rem;cursor:pointer}
+	.ej:hover{border-color:var(--azul);color:var(--azul);border-style:solid}
+	.ej b{display:block;color:var(--texto);font-size:.72rem}
+	.ej:hover b{color:var(--azul)}
+
 	/* Panel de capas */
 	.capa{background:var(--panel2);border-radius:8px;padding:.5rem .6rem;margin-bottom:.45rem;border-left:3px solid var(--borde)}
 	.capa.sel{border-left-color:var(--azul)}
@@ -96,6 +102,11 @@
 		<div class="fila">
 			<button class="b primario" id="btn-sel" style="min-width:100%">Seleccionar área</button>
 		</div>
+		<div class="ejemplos">
+			<button class="ej" data-ej="volcan"><b>Volcán</b>Nevados de Chillán</button>
+			<button class="ej" data-ej="cuenca"><b>Cuenca</b>Río Maipo</button>
+			<button class="ej" data-ej="costa"><b>Costa</b>Valparaíso</button>
+		</div>
 		<div id="estado">Motor cargando…</div>
 	</div>
 
@@ -120,6 +131,7 @@
 		</div>
 		<div class="fila" style="margin-top:.5rem">
 			<button class="b" id="btn-exportar" disabled>⬇ GeoTIFF</button>
+			<button class="b" id="btn-compartir">🔗 Copiar enlace</button>
 			<button class="b" id="btn-limpiar">✕ Limpiar</button>
 		</div>
 	</div>
@@ -410,6 +422,7 @@ function crearCapa(clave, cfg, raster, bytes, ms) {
 	document.querySelector(`.an[data-a="${clave}"]`)?.classList.add('activo');
 	refrescarLeyenda();
 	dibujarPanelCapas();
+	actualizarURL();
 
 	estado.innerHTML = cfg.fn === null
 		? `<b style="color:var(--verde)">${cfg.nombre}</b> — modelo de elevación cargado`
@@ -450,8 +463,14 @@ async function seleccionar(bounds) {
 		recorte = await cargarRecorte(bounds);
 		rectSeleccion = L.rectangle(bounds, { color: '#0ea5e9', weight: 2, fill: false }).addTo(map);
 
-		const v = Array.from(recorte.datos).filter(Number.isFinite);
-		const mn = Math.min(...v), mx = Math.max(...v);
+		// Recorrido explícito: el operador de propagación revienta la pila por
+		// encima de ~65.000 argumentos, y un área mediana supera ese número.
+		let mn = Infinity, mx = -Infinity;
+		for (const val of recorte.datos) {
+			if (!Number.isFinite(val)) continue;
+			if (val < mn) mn = val;
+			if (val > mx) mx = val;
+		}
 		const kmX = (bounds.getEast() - bounds.getWest()) * M_POR_GRADO * Math.cos(bounds.getCenter().lat * Math.PI / 180) / 1000;
 		const kmY = (bounds.getNorth() - bounds.getSouth()) * M_POR_GRADO / 1000;
 
@@ -503,12 +522,71 @@ $('btn-exportar').onclick = () => {
 
 document.querySelectorAll('.an').forEach(b => b.onclick = () => ejecutar(b.dataset.a));
 
+
+// ---------- Áreas de ejemplo ----------
+// Un visitante que llega sin conocer Chile no sabe dónde dibujar; esto lo lleva
+// al resultado en un clic.
+const EJEMPLOS = {
+	volcan: { bounds: [[-36.90, -71.50], [-36.85, -71.40]], capas: ['elevacion', 'relieve', 'pendiente'] },
+	cuenca: { bounds: [[-33.68, -70.35], [-33.60, -70.22]], capas: ['elevacion', 'relieve', 'geoformas'] },
+	costa:  { bounds: [[-33.08, -71.65], [-33.00, -71.53]], capas: ['elevacion', 'relieve', 'pendiente'] }
+};
+
+async function cargarEscena(bounds, listaCapas) {
+	await seleccionar(L.latLngBounds(bounds));
+	if (!recorte || !$('bloque-datos').style.display || $('bloque-datos').style.display === 'none') return;
+	for (const c of listaCapas) {
+		if (c !== 'elevacion') await ejecutar(c);   // la elevación ya la carga seleccionar()
+	}
+}
+
+document.querySelectorAll('.ej').forEach(b => b.onclick = async () => {
+	if (!listo) return;
+	const e = EJEMPLOS[b.dataset.ej];
+	await cargarEscena(e.bounds, e.capas);
+});
+
+// ---------- Enlace compartible ----------
+// La URL guarda el área y las capas visibles, de modo que se pueda enviar a
+// alguien el análisis de una zona concreta ya cargado.
+function actualizarURL() {
+	if (!recorte) { history.replaceState(null, '', location.pathname); return; }
+	const b = recorte.bounds;
+	const area = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].map(n => n.toFixed(5)).join(',');
+	const activas = [...capas.keys()].join(',');
+	history.replaceState(null, '', `${location.pathname}?area=${area}${activas ? '&capas=' + activas : ''}`);
+}
+
+$('btn-compartir').onclick = async () => {
+	actualizarURL();
+	try {
+		await navigator.clipboard.writeText(location.href);
+		mostrarAviso('Enlace copiado. Quien lo abra verá esta misma área y estas capas.');
+	} catch {
+		mostrarAviso('Copia el enlace desde la barra de direcciones.');
+	}
+};
+
+async function restaurarDesdeURL() {
+	const p = new URLSearchParams(location.search);
+	const area = p.get('area');
+	if (!area) return false;
+	const n = area.split(',').map(Number);
+	if (n.length !== 4 || n.some(v => !Number.isFinite(v))) return false;
+	const pedidas = (p.get('capas') || 'elevacion').split(',').filter(c => c in ANALISIS);
+	await cargarEscena([[n[0], n[1]], [n[2], n[3]]], pedidas);
+	return true;
+}
+
 // ---------- Arranque ----------
 (async () => {
 	try {
 		await init();
 		listo = true;
 		estado.textContent = 'Motor listo. Presiona «Seleccionar área» y arrastra sobre el mapa.';
+		if (!(await restaurarDesdeURL())) {
+			estado.textContent = 'Motor listo. Arrastra un área o prueba un ejemplo.';
+		}
 	} catch (e) {
 		estado.innerHTML = `<span style="color:var(--rojo)">No se pudo cargar el motor: ${e.message || e}</span>`;
 	}
