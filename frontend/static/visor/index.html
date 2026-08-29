@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visor de análisis de terreno — Territorio Digital</title>
 <meta name="description" content="Dibuja un área en cualquier parte de Chile y obtén relieve, pendiente y clasificación de geoformas al instante. El análisis corre en tu navegador con SurtGIS, motor geoespacial en Rust publicado en Environmental Modelling & Software.">
-<link rel="stylesheet" href="./leaflet.css?v=3">
-<script src="./leaflet.js?v=3"></script>
-<script src="./geotiff.js?v=3"></script>
-<script src="./proj4.js?v=3"></script>
+<link rel="stylesheet" href="./leaflet.css?v=4">
+<script src="./leaflet.js?v=4"></script>
+<script src="./geotiff.js?v=4"></script>
+<script src="./proj4.js?v=4"></script>
 <!--
 	OJO: nginx sirve los .js con Cache-Control immutable por un año, así que un
 	archivo con el mismo nombre nunca se vuelve a pedir. Al actualizar cualquier
@@ -104,6 +104,18 @@
 	#map{width:100%;height:100%;background:#0a0f1a}
 	#map.dibujando{cursor:crosshair}
 
+	#serie{position:absolute;left:0;right:0;bottom:0;z-index:1001;background:rgba(15,23,42,.96);border-top:1px solid var(--borde);padding:.7rem .9rem;display:none}
+	#serie.ver{display:block}
+	#serie .cab{display:flex;align-items:center;gap:1rem;margin-bottom:.4rem;flex-wrap:wrap}
+	#serie .tit{font-size:.78rem;font-weight:700}
+	#serie .met{display:flex;gap:1.1rem;font-size:.7rem;color:var(--gris);flex-wrap:wrap}
+	#serie .met b{color:var(--azul)}
+	#serie .met b.sube{color:var(--verde)}
+	#serie .met b.baja{color:var(--rojo)}
+	#serie .cerrar{margin-left:auto;cursor:pointer;color:var(--gris)}
+	#serie svg{width:100%;height:150px;display:block}
+	#progreso{font-size:.68rem;color:var(--gris);margin-top:.4rem}
+
 	#perfil{position:absolute;left:0;right:0;bottom:0;z-index:1000;background:rgba(15,23,42,.95);border-top:1px solid var(--borde);padding:.7rem .9rem;display:none}
 	#perfil.ver{display:block}
 	#perfil .cab{display:flex;align-items:center;gap:1rem;margin-bottom:.4rem}
@@ -182,6 +194,10 @@
 			<button class="b" id="btn-escena" style="min-width:100%">Buscar escena reciente</button>
 		</div>
 		<div id="escena"></div>
+		<div class="fila" style="margin-bottom:.5rem">
+			<button class="b" id="btn-serie" style="min-width:100%">📈 Construir serie temporal (NDVI)</button>
+		</div>
+		<div id="progreso"></div>
 		<input id="buscar-idx" placeholder="Buscar índice: ndvi, incendio, agua…" autocomplete="off">
 		<div class="fichas" id="fichas-idx"></div>
 		<div id="cuenta-idx"></div>
@@ -206,6 +222,15 @@
 <div id="mapa-cont">
 	<div id="map"></div>
 	<div class="aviso" id="aviso"></div>
+	<div id="serie">
+		<div class="cab">
+			<span class="tit" id="serie-tit">Serie temporal</span>
+			<span class="met" id="serie-met"></span>
+			<span class="cerrar" id="serie-cerrar">✕</span>
+		</div>
+		<svg id="serie-svg" viewBox="0 0 1000 150" preserveAspectRatio="none"></svg>
+	</div>
+
 	<div id="perfil">
 		<div class="cab">
 			<span class="tit">Perfil topográfico</span>
@@ -221,9 +246,10 @@ import init, {
 	slope, hillshade_compute, geomorphons_compute, curvature_compute,
 	fill_depressions, flow_direction_d8, flow_accumulation_d8, twi_compute, hand_compute,
 	spectral_index
-} from './wasm/surtgis_wasm.js?v=3';
-import { buscarEscenas, leerBandas } from './sentinel.js?v=3';
-import { escribirGeoTIFF } from './geotiff-writer.js?v=3';
+} from './wasm/surtgis_wasm.js?v=4';
+import { buscarEscenas, leerBandas, leerMascara, CLASES_INVALIDAS } from './sentinel.js?v=4';
+import initDatacube, { theil_sen, mann_kendall, detect_breaks } from './wasm-datacube/datacube_wasm.js?v=4';
+import { escribirGeoTIFF } from './geotiff-writer.js?v=4';
 
 // ---------- Constantes del DEM Copernicus GLO-30 ----------
 const PX_POR_GRADO = 3600;       // cada tile cubre 1° x 1°
@@ -609,7 +635,8 @@ function limpiar(todo = true) {
 	$('btn-exportar').disabled = true;
 	document.querySelectorAll('.an').forEach(b => b.classList.remove('activo'));
 	if (todo) {
-		recorte = null;
+		recorte = null; cubo = null;
+		$('serie').classList.remove('ver'); $('progreso').textContent = '';
 		$('bloque-datos').style.display = 'none';
 		$('bloque-analisis').style.display = 'none';
 		$('bloque-sat').style.display = 'none';
@@ -654,7 +681,7 @@ const FRECUENTES = ['NDVI', 'EVI', 'SAVI', 'MSAVI', 'GNDVI', 'NDWI', 'MNDWI', 'N
 
 let dominioActivo = 'frecuentes';
 
-fetch('./indices.json?v=3').then(r => r.json()).then(c => {
+fetch('./indices.json?v=4').then(r => r.json()).then(c => {
 	CATALOGO = c;
 	dibujarFichas();
 	listarIndices();
@@ -766,6 +793,157 @@ async function calcularIndice(shortName) {
 		estado.innerHTML = `<span style="color:var(--rojo)">${e.message || e}</span>`;
 	}
 }
+
+
+// ---------- Series temporales (datacube-rs) ----------
+// El motor expone estadísticos por serie, no por cubo: se calculan sobre el
+// píxel que el usuario elige, no sobre toda el área. Un mapa de tendencia
+// requeriría una función a nivel de cubo en datacube-rs.
+let cubo = null;   // { fechas[], capas[Float32Array], ancho, alto, indice }
+
+$('btn-serie').onclick = async () => {
+	if (!recorte) return;
+	const prog = $('progreso');
+	const idx = CATALOGO['NDVI'];
+	if (!idx) { prog.textContent = 'Catálogo no disponible'; return; }
+
+	try {
+		// Una sola consulta devolvería las más recientes: con revisita de 5 días,
+		// cuarenta escenas cubren meses, no años. Se consulta por trimestres para
+		// que la serie quede repartida en el tiempo, que es lo que exige un
+		// análisis de tendencia.
+		const VENTANAS = 12, MESES = 3;
+		const elegidas = [];
+		for (let k = VENTANAS - 1; k >= 0; k--) {
+			prog.textContent = `Buscando escenas… trimestre ${VENTANAS - k} de ${VENTANAS}`;
+			const fin = new Date(); fin.setMonth(fin.getMonth() - k * MESES);
+			const ini = new Date(fin); ini.setMonth(ini.getMonth() - MESES);
+			const rango = `${ini.toISOString().slice(0, 19)}Z/${fin.toISOString().slice(0, 19)}Z`;
+			try {
+				const c = (await buscarEscenas(recorte.bounds, 20, 12, null, rango))
+					.filter(e => e.epsg)
+					.sort((a, b) => (a.nubes ?? 100) - (b.nubes ?? 100));   // la más despejada del trimestre
+				if (c.length) elegidas.push(c[0]);
+			} catch { /* un trimestre sin escenas no invalida la serie */ }
+		}
+		elegidas.sort((a, b) => a.fecha.localeCompare(b.fecha));
+		if (elegidas.length < 5) { prog.textContent = `Solo ${elegidas.length} trimestres con imagen utilizable; insuficiente para una serie.`; return; }
+
+		const nombres = bandasDeFormula(idx.f);
+		const fechas = [], capas = [];
+		let ancho = 0, alto = 0;
+
+		for (let i = 0; i < elegidas.length; i++) {
+			const e = elegidas[i];
+			prog.textContent = `Descargando ${i + 1} de ${elegidas.length} · ${e.fecha}`;
+			try {
+				// Resolución reducida: un análisis temporal no la necesita alta y
+				// cada fecha implica descargar bandas nuevas.
+				const r = await leerBandas(e, recorte.bounds, nombres, 180);
+				ancho = r.ancho; alto = r.alto;
+
+				const tiffs = nombres.map(n => escribirGeoTIFF(r.bandas[n], r.ancho, r.alto, 10, 10));
+				const salida = spectral_index(idx.f, nombres, tiffs);
+				const t = await GeoTIFF.fromArrayBuffer(salida.buffer.slice(salida.byteOffset, salida.byteOffset + salida.byteLength));
+				const raster = Float32Array.from((await (await t.getImage()).readRasters())[0]);
+
+				// Invalidar nubes, sombras y nieve: sin esto la serie es ruido y
+				// los quiebres detectados serían falsos.
+				const scl = await leerMascara(e, recorte.bounds, r.ancho, r.alto);
+				if (scl) {
+					for (let q = 0; q < raster.length; q++) {
+						if (CLASES_INVALIDAS.has(scl[q])) raster[q] = NaN;
+					}
+				}
+				fechas.push(e.fecha); capas.push(raster);
+			} catch { /* una fecha que falla no invalida la serie completa */ }
+		}
+
+		if (capas.length < 5) { prog.textContent = 'No se reunieron suficientes fechas válidas.'; return; }
+		cubo = { fechas, capas, ancho, alto, indice: 'NDVI' };
+		prog.innerHTML = `<b style="color:var(--verde)">Serie lista: ${capas.length} fechas entre ${fechas[0]} y ${fechas[fechas.length - 1]}</b><br>Haz clic dentro del área para ver la evolución de ese punto.`;
+		mostrarAviso('Serie construida. Haz clic dentro del área para inspeccionar un punto.');
+	} catch (e) {
+		prog.innerHTML = `<span style="color:var(--rojo)">${e.message || e}</span>`;
+	}
+};
+
+function serieEnPunto(lat, lon) {
+	const b = recorte.bounds;
+	const fx = (lon - b.getWest()) / (b.getEast() - b.getWest());
+	const fy = (b.getNorth() - lat) / (b.getNorth() - b.getSouth());
+	const x = Math.round(fx * (cubo.ancho - 1));
+	const y = Math.round(fy * (cubo.alto - 1));
+	if (x < 0 || y < 0 || x >= cubo.ancho || y >= cubo.alto) return null;
+
+	const t = [], v = [], f = [];
+	const base = new Date(cubo.fechas[0]).getTime();
+	cubo.capas.forEach((c, i) => {
+		const val = c[y * cubo.ancho + x];
+		if (Number.isFinite(val)) {
+			t.push((new Date(cubo.fechas[i]).getTime() - base) / 864e5 / 365.25);  // años
+			v.push(val); f.push(cubo.fechas[i]);
+		}
+	});
+	return v.length >= 5 ? { t, v, f } : null;
+}
+
+function dibujarSerie(s, lat, lon) {
+	let ts = null, mk = null, quiebres = [];
+	try { ts = theil_sen(new Float64Array(s.t), new Float64Array(s.v)); } catch {}
+	try { mk = mann_kendall(new Float64Array(s.v), 0.05); } catch {}
+	try {
+		const r = detect_breaks(new Float64Array(s.t), new Float64Array(s.v), 0.05, 1, 1.0, 3);
+		quiebres = (r && (r.breaks || r.break_indices || [])) || [];
+	} catch {}
+
+	const W = 1000, H = 150, mIzq = 44, mDer = 10, mSup = 12, mInf = 22;
+	const mnV = Math.min(...s.v), mxV = Math.max(...s.v), rango = (mxV - mnV) || 1;
+	const X = i => mIzq + (s.t[i] / (s.t[s.t.length - 1] || 1)) * (W - mIzq - mDer);
+	const Y = val => mSup + (1 - (val - mnV) / rango) * (H - mSup - mInf);
+
+	const puntos = s.v.map((val, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(val).toFixed(1)}" r="2.6" fill="#38bdf8"/>`).join('');
+    const linea = s.v.map((val, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(val).toFixed(1)}`).join('');
+
+	// Recta de Theil-Sen: robusta ante valores atípicos, que en teledetección abundan.
+	let tendencia = '';
+	if (ts && Number.isFinite(ts.slope)) {
+		const y0 = ts.intercept, y1 = ts.intercept + ts.slope * s.t[s.t.length - 1];
+		tendencia = `<line x1="${mIzq}" y1="${Y(y0).toFixed(1)}" x2="${(W - mDer)}" y2="${Y(y1).toFixed(1)}"
+			stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="6 4"/>`;
+	}
+	const marcasQuiebre = quiebres.map(i => {
+		const xx = X(Math.min(i, s.t.length - 1));
+		return `<line x1="${xx}" y1="${mSup}" x2="${xx}" y2="${H - mInf}" stroke="#ef4444" stroke-width="1.4" opacity=".8"/>`;
+	}).join('');
+
+	const ejes = [0, .5, 1].map(fr => {
+		const val = mnV + rango * (1 - fr), yy = mSup + fr * (H - mSup - mInf);
+		return `<line x1="${mIzq}" y1="${yy}" x2="${W - mDer}" y2="${yy}" stroke="#334155"/>
+			<text x="${mIzq - 5}" y="${yy + 3}" fill="#94a3b8" font-size="10" text-anchor="end">${val.toFixed(2)}</text>`;
+	}).join('') + [0, s.f.length - 1].map((i, k) =>
+		`<text x="${k ? W - mDer : mIzq}" y="${H - 6}" fill="#94a3b8" font-size="10" text-anchor="${k ? 'end' : 'start'}">${s.f[i]}</text>`).join('');
+
+	$('serie-svg').innerHTML = ejes + tendencia + marcasQuiebre + `<path d="${linea}" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity=".9"/>` + puntos;
+
+	const pend = ts && Number.isFinite(ts.slope) ? ts.slope : null;
+	const signif = mk && (mk.significant ?? mk.is_significant);
+	$('serie-tit').textContent = `NDVI en ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+	$('serie-met').innerHTML =
+		`Observaciones <b>${s.v.length}</b>` +
+		(pend !== null ? `Tendencia <b class="${pend > 0 ? 'sube' : 'baja'}">${pend > 0 ? '+' : ''}${pend.toFixed(4)}/año</b>` : '') +
+		(mk ? `Mann-Kendall <b>${signif ? 'significativa' : 'no significativa'}</b>` : '') +
+		(quiebres.length ? `Quiebres <b>${quiebres.length}</b>` : 'Sin quiebres detectados');
+	$('serie').classList.add('ver');
+}
+
+map.on('click', e => {
+	if (!cubo || !recorte || dibujando || modoPerfil) return;
+	const s = serieEnPunto(e.latlng.lat, e.latlng.lng);
+	if (!s) { mostrarAviso('Ese punto no tiene suficientes observaciones válidas (nubes)', true); return; }
+	dibujarSerie(s, e.latlng.lat, e.latlng.lng);
+});
+$('serie-cerrar').onclick = () => $('serie').classList.remove('ver');
 
 // ---------- Perfil topográfico ----------
 // Muestrea el modelo de elevación ya cargado en memoria a lo largo de una línea.
@@ -914,6 +1092,7 @@ async function restaurarDesdeURL() {
 (async () => {
 	try {
 		await init();
+		await initDatacube();
 		listo = true;
 		estado.textContent = 'Motor listo. Presiona «Seleccionar área» y arrastra sobre el mapa.';
 		if (!(await restaurarDesdeURL())) {

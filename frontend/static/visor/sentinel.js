@@ -8,13 +8,18 @@ const STAC = 'https://earth-search.aws.element84.com/v1/search';
 
 // Nombres de banda del estándar Awesome Spectral Indices → assets de Earth Search.
 // Ojo: en el estándar "S2" es la banda SWIR-2, no el satélite Sentinel-2.
+// Clases de la banda SCL (clasificación de escena de Sentinel-2 L2A) que
+// invalidan un píxel para análisis temporal. Sin enmascararlas, una nube
+// convierte la serie en ruido y los quiebres detectados son falsos.
+export const CLASES_INVALIDAS = new Set([0, 1, 3, 8, 9, 10, 11]);
+
 export const BANDA_A_ASSET = {
 	A: 'coastal', B: 'blue', G: 'green', R: 'red',
 	RE1: 'rededge1', RE2: 'rededge2', RE3: 'rededge3',
 	N: 'nir', N2: 'nir08', S1: 'swir16', S2: 'swir22', WV: 'nir09'
 };
 
-export async function buscarEscenas(bounds, maxNubes = 30, limite = 8) {
+export async function buscarEscenas(bounds, maxNubes = 30, limite = 8, desde = null, rango = null) {
 	const cuerpo = {
 		collections: ['sentinel-2-l2a'],
 		bbox: [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
@@ -22,6 +27,9 @@ export async function buscarEscenas(bounds, maxNubes = 30, limite = 8) {
 		sortby: [{ field: 'properties.datetime', direction: 'desc' }],
 		limit: limite
 	};
+	// Earth Search exige RFC3339 completo; una fecha suelta devuelve 400.
+	if (rango) cuerpo.datetime = rango;
+	else if (desde) cuerpo.datetime = `${desde}/..`;
 	const r = await fetch(STAC, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -108,4 +116,32 @@ export async function leerBandas(escena, bounds, nombresEstandar, ladoMax = 420)
 		bandas[nombre] = f;
 	}
 	return { bandas, ancho, alto, utm };
+}
+
+// Lee la banda de clasificación de escena para descartar píxeles con nube,
+// sombra o nieve. Se remuestrea al mismo tamaño que las bandas espectrales.
+export async function leerMascara(escena, bounds, ancho, alto) {
+	const href = escena.assets?.scl?.href;
+	if (!href) return null;
+	const aUTM = proj4('EPSG:4326', `EPSG:${escena.epsg}`);
+	const esquinas = [
+		[bounds.getWest(), bounds.getSouth()], [bounds.getEast(), bounds.getSouth()],
+		[bounds.getWest(), bounds.getNorth()], [bounds.getEast(), bounds.getNorth()]
+	].map(c => aUTM.forward(c));
+	const xs = esquinas.map(c => c[0]), ys = esquinas.map(c => c[1]);
+
+	const img = await (await GeoTIFF.fromUrl(href)).getImage();
+	const bb = img.getBoundingBox();
+	const W = img.getWidth(), H = img.getHeight();
+	const px = x => ((x - bb[0]) / (bb[2] - bb[0])) * W;
+	const py = y => ((bb[3] - y) / (bb[3] - bb[1])) * H;
+	const v = [
+		Math.max(0, Math.floor(px(Math.min(...xs)))), Math.max(0, Math.floor(py(Math.max(...ys)))),
+		Math.min(W, Math.ceil(px(Math.max(...xs)))), Math.min(H, Math.ceil(py(Math.min(...ys))))
+	];
+	if (v[2] - v[0] < 2 || v[3] - v[1] < 2) return null;
+
+	// Vecino más cercano: son etiquetas de clase, interpolarlas no tiene sentido.
+	const [scl] = await img.readRasters({ window: v, width: ancho, height: alto, resampleMethod: 'nearest' });
+	return scl;
 }
