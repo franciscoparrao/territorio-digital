@@ -5,10 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visor de análisis de terreno — Territorio Digital</title>
 <meta name="description" content="Dibuja un área en cualquier parte de Chile y obtén relieve, pendiente y clasificación de geoformas al instante. El análisis corre en tu navegador con SurtGIS, motor geoespacial en Rust publicado en Environmental Modelling & Software.">
-<link rel="stylesheet" href="./leaflet.css">
-<script src="./leaflet.js"></script>
-<script src="./geotiff.js"></script>
-<script src="./proj4.js"></script>
+<link rel="stylesheet" href="./leaflet.css?v=2">
+<script src="./leaflet.js?v=2"></script>
+<script src="./geotiff.js?v=2"></script>
+<script src="./proj4.js?v=2"></script>
+<!--
+	OJO: nginx sirve los .js con Cache-Control immutable por un año, así que un
+	archivo con el mismo nombre nunca se vuelve a pedir. Al actualizar cualquier
+	.js de esta carpeta hay que subir el ?v= de todas las URLs de abajo, o los
+	visitantes que ya entraron seguirán ejecutando la versión vieja.
+	El index.html, el .wasm y el .json no tienen ese problema.
+-->
 <style>
 	:root{
 		--azul:#0ea5e9; --azul-osc:#0369a1; --panel:#0f172a; --panel2:#1e293b;
@@ -206,9 +213,9 @@ import init, {
 	slope, hillshade_compute, geomorphons_compute, curvature_compute,
 	fill_depressions, flow_direction_d8, flow_accumulation_d8, twi_compute, hand_compute,
 	spectral_index
-} from './wasm/surtgis_wasm.js';
-import { buscarEscenas, leerBandas } from './sentinel.js';
-import { escribirGeoTIFF } from './geotiff-writer.js';
+} from './wasm/surtgis_wasm.js?v=2';
+import { buscarEscenas, leerBandas } from './sentinel.js?v=2';
+import { escribirGeoTIFF } from './geotiff-writer.js?v=2';
 
 // ---------- Constantes del DEM Copernicus GLO-30 ----------
 const PX_POR_GRADO = 3600;       // cada tile cubre 1° x 1°
@@ -633,7 +640,7 @@ const DOMINIOS = {
 	urban: 'urbano', soil: 'suelo', snow: 'nieve', cloud: 'nubes', kernel: 'kernel'
 };
 
-fetch('./indices.json').then(r => r.json()).then(c => { CATALOGO = c; listarIndices(''); }).catch(() => {});
+fetch('./indices.json?v=2').then(r => r.json()).then(c => { CATALOGO = c; listarIndices(''); }).catch(() => {});
 
 // Los nombres de banda se derivan de la fórmula en orden de aparición y se
 // mapean posicionalmente contra los buffers, sin filtrar: si falta una banda
