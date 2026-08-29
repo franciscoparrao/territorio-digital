@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visor de análisis de terreno — Territorio Digital</title>
 <meta name="description" content="Dibuja un área en cualquier parte de Chile y obtén relieve, pendiente y clasificación de geoformas al instante. El análisis corre en tu navegador con SurtGIS, motor geoespacial en Rust publicado en Environmental Modelling & Software.">
-<link rel="stylesheet" href="./leaflet.css?v=2">
-<script src="./leaflet.js?v=2"></script>
-<script src="./geotiff.js?v=2"></script>
-<script src="./proj4.js?v=2"></script>
+<link rel="stylesheet" href="./leaflet.css?v=3">
+<script src="./leaflet.js?v=3"></script>
+<script src="./geotiff.js?v=3"></script>
+<script src="./proj4.js?v=3"></script>
 <!--
 	OJO: nginx sirve los .js con Cache-Control immutable por un año, así que un
 	archivo con el mismo nombre nunca se vuelve a pedir. Al actualizar cualquier
@@ -64,7 +64,13 @@
 	#escena b{color:var(--azul)}
 	#buscar-idx{width:100%;background:var(--panel2);border:1px solid var(--borde);border-radius:6px;color:var(--texto);padding:.4rem .55rem;font-size:.75rem;margin-bottom:.4rem}
 	#buscar-idx::placeholder{color:var(--gris)}
-	#lista-idx{max-height:190px;overflow-y:auto}
+	.fichas{display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.4rem}
+	.ficha{background:var(--panel2);border:1px solid var(--borde);color:var(--gris);border-radius:999px;padding:.15rem .5rem;font-size:.62rem;cursor:pointer}
+	.ficha:hover{color:var(--azul)}
+	.ficha.on{background:var(--azul);color:#04222f;border-color:var(--azul);font-weight:700}
+	#cuenta-idx{font-size:.62rem;color:var(--gris);margin-bottom:.3rem}
+	#lista-idx{max-height:230px;overflow-y:auto}
+	.idx .par{font-size:.58rem;color:var(--azul);margin-top:.1rem}
 	.idx{padding:.35rem .5rem;border-radius:5px;cursor:pointer;font-size:.72rem;border-left:2px solid transparent}
 	.idx:hover{background:var(--panel2);border-left-color:var(--azul)}
 	.idx .sn{font-weight:700;color:var(--texto)}
@@ -177,6 +183,8 @@
 		</div>
 		<div id="escena"></div>
 		<input id="buscar-idx" placeholder="Buscar índice: ndvi, incendio, agua…" autocomplete="off">
+		<div class="fichas" id="fichas-idx"></div>
+		<div id="cuenta-idx"></div>
 		<div id="lista-idx"></div>
 	</div>
 
@@ -213,9 +221,9 @@ import init, {
 	slope, hillshade_compute, geomorphons_compute, curvature_compute,
 	fill_depressions, flow_direction_d8, flow_accumulation_d8, twi_compute, hand_compute,
 	spectral_index
-} from './wasm/surtgis_wasm.js?v=2';
-import { buscarEscenas, leerBandas } from './sentinel.js?v=2';
-import { escribirGeoTIFF } from './geotiff-writer.js?v=2';
+} from './wasm/surtgis_wasm.js?v=3';
+import { buscarEscenas, leerBandas } from './sentinel.js?v=3';
+import { escribirGeoTIFF } from './geotiff-writer.js?v=3';
 
 // ---------- Constantes del DEM Copernicus GLO-30 ----------
 const PX_POR_GRADO = 3600;       // cada tile cubre 1° x 1°
@@ -637,10 +645,33 @@ let escenaActual = null;
 
 const DOMINIOS = {
 	vegetation: 'vegetación', water: 'agua', burn: 'incendio',
-	urban: 'urbano', soil: 'suelo', snow: 'nieve', cloud: 'nubes', kernel: 'kernel'
+	urban: 'urbano', soil: 'suelo', snow: 'nieve', clouds: 'nubes'
 };
 
-fetch('./indices.json?v=2').then(r => r.json()).then(c => { CATALOGO = c; listarIndices(''); }).catch(() => {});
+// Los que se usan de verdad en la práctica. Con 233 en el catálogo, abrir
+// mostrando la lista alfabética completa no ayuda a nadie.
+const FRECUENTES = ['NDVI', 'EVI', 'SAVI', 'MSAVI', 'GNDVI', 'NDWI', 'MNDWI', 'NBR', 'NDMI', 'NDBI', 'NDSI', 'ARVI'];
+
+let dominioActivo = 'frecuentes';
+
+fetch('./indices.json?v=3').then(r => r.json()).then(c => {
+	CATALOGO = c;
+	dibujarFichas();
+	listarIndices();
+}).catch(() => {});
+
+function dibujarFichas() {
+	const usados = new Set(Object.values(CATALOGO).map(v => v.d));
+	const opciones = [['frecuentes', 'frecuentes'], ['todos', 'todos']]
+		.concat([...usados].filter(d => DOMINIOS[d]).map(d => [d, DOMINIOS[d]]));
+	$('fichas-idx').innerHTML = opciones.map(([k, t]) =>
+		`<span class="ficha${k === dominioActivo ? ' on' : ''}" data-d="${k}">${t}</span>`).join('');
+	$('fichas-idx').querySelectorAll('.ficha').forEach(f => f.onclick = () => {
+		dominioActivo = f.dataset.d;
+		$('buscar-idx').value = '';
+		dibujarFichas(); listarIndices();
+	});
+}
 
 // Los nombres de banda se derivan de la fórmula en orden de aparición y se
 // mapean posicionalmente contra los buffers, sin filtrar: si falta una banda
@@ -653,24 +684,36 @@ function bandasDeFormula(formula) {
 	return vistas;
 }
 
-function listarIndices(filtro) {
-	const cont = $('lista-idx');
-	const f = filtro.trim().toLowerCase();
-	const entradas = Object.entries(CATALOGO).filter(([sn, v]) =>
-		!f || sn.toLowerCase().includes(f) || v.n.toLowerCase().includes(f) ||
-		(DOMINIOS[v.d] || v.d).includes(f)
-	).slice(0, 60);
+function listarIndices() {
+	const f = $('buscar-idx').value.trim().toLowerCase();
+	let entradas = Object.entries(CATALOGO);
 
-	cont.innerHTML = entradas.length
-		? entradas.map(([sn, v]) =>
-			`<div class="idx" data-sn="${sn}"><span class="dom">${DOMINIOS[v.d] || v.d}</span>
-			 <div class="sn">${sn}</div><div class="ln">${v.n}</div></div>`).join('')
+	if (f) {
+		entradas = entradas.filter(([sn, v]) =>
+			sn.toLowerCase().includes(f) || v.n.toLowerCase().includes(f) ||
+			(DOMINIOS[v.d] || v.d).includes(f));
+	} else if (dominioActivo === 'frecuentes') {
+		entradas = FRECUENTES.filter(k => CATALOGO[k]).map(k => [k, CATALOGO[k]]);
+	} else if (dominioActivo !== 'todos') {
+		entradas = entradas.filter(([, v]) => v.d === dominioActivo);
+	}
+
+	$('cuenta-idx').textContent = f
+		? `${entradas.length} coincidencias de ${Object.keys(CATALOGO).length}`
+		: `${entradas.length} índices${dominioActivo === 'frecuentes' ? ' de uso habitual' : ''} · ${Object.keys(CATALOGO).length} en total`;
+
+	$('lista-idx').innerHTML = entradas.length
+		? entradas.map(([sn, v]) => {
+			const par = v.p ? `<div class="par">parámetros: ${Object.entries(v.p).map(([k, x]) => `${k}=${x}`).join(', ')}</div>` : '';
+			return `<div class="idx" data-sn="${sn}"><span class="dom">${DOMINIOS[v.d] || v.d}</span>
+				<div class="sn">${sn}</div><div class="ln">${v.n}</div>${par}</div>`;
+		}).join('')
 		: '<div class="idx"><span class="ln">Sin coincidencias</span></div>';
 
-	cont.querySelectorAll('.idx[data-sn]').forEach(el =>
+	$('lista-idx').querySelectorAll('.idx[data-sn]').forEach(el =>
 		el.onclick = () => calcularIndice(el.dataset.sn));
 }
-$('buscar-idx').oninput = e => listarIndices(e.target.value);
+$('buscar-idx').oninput = () => listarIndices();
 
 $('btn-escena').onclick = async () => {
 	if (!recorte) return;
