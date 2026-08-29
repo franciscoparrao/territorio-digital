@@ -71,6 +71,10 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
+      # Los logs viven en el host para que sobrevivan a la recreación del
+      # contenedor. En la imagen, access.log es un enlace a /dev/stdout y el
+      # historial se perdía al recrear nginx.
+      - /var/log/territorio-digital:/var/log/nginx
     depends_on:
       - frontend
       - backend
