@@ -22,9 +22,18 @@ BOTS='bot|crawl|spider|slurp|bingpreview|headless|curl|wget|python-requests|semr
 # Escáneres de internet que aparecen como referente sin ser visitas reales.
 ESCANERES='internet-measurement|censys|modat\.io|scrapy|example\.com|getodin|shodan|leakix|netsystems|paloaltonetworks'
 
+# Desde el 29-ago los logs se escriben en archivos del host y ya no en
+# `docker logs`. Se incluyen los rotados y el histórico rescatado antes
+# del cambio, para no perder continuidad.
 echo "Descargando el log de acceso…"
 CRUDO=$(mktemp) && trap 'rm -f "$CRUDO"' EXIT
-ssh "$SERVIDOR" "docker logs territorio-digital-nginx 2>&1" > "$CRUDO"
+ssh "$SERVIDOR" "
+	cd /var/log/territorio-digital 2>/dev/null || exit 0
+	zcat -f acceso-historico-*.log.gz 2>/dev/null
+	zcat -f access.log.*.gz 2>/dev/null
+	cat access.log.[0-9]* 2>/dev/null
+	cat access.log 2>/dev/null
+" > "$CRUDO"
 
 # Ventana temporal opcional
 if [ "$DIAS" -gt 0 ]; then
