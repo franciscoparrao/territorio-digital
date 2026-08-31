@@ -1,6 +1,54 @@
 /* @ts-self-types="./datacube_wasm.d.ts" */
 
 /**
+ * Per-pixel trend (and optionally break) statistics over a whole single-band
+ * cube in one JS↔WASM crossing, instead of one call per pixel.
+ *
+ * Contract:
+ * - `values` is the cube flattened **time-major, row-major within each time
+ *   slice**: `values[t * height * width + y * width + x]` — i.e. the
+ *   concatenation of the per-date grids, each in row order. Length must be
+ *   `n_times * height * width`.
+ * - `times` is the shared time axis (decimal years), `n_times` long.
+ * - `NaN` marks nodata (e.g. SCL cloud masking); each pixel is computed on
+ *   its remaining finite observations. Pixels with fewer than `min_valid`
+ *   finite observations get `NaN` in every output grid.
+ * - `method` is `"theil_sen"` (Theil-Sen slope + Mann-Kendall p-value) or
+ *   `"ols"` (OLS slope + t-test p-value).
+ * - `breaks_alpha` enables OLS-CUSUM break detection (trend-only segment
+ *   model) at that significance; `0` disables it and the break grids come
+ *   back `null`. `min_segment` is the minimum observations per segment.
+ *
+ * Returns `{ slope, p_value, break_count, first_break, width, height }`,
+ * each grid a `Float64Array` of `height * width` in the same row order as
+ * the input slices. Pixels where a statistic could not be computed are
+ * `NaN` (matching the per-series functions' error cases).
+ * @param {Float64Array} values
+ * @param {number} n_times
+ * @param {number} height
+ * @param {number} width
+ * @param {Float64Array} times
+ * @param {string} method
+ * @param {number} breaks_alpha
+ * @param {number} min_segment
+ * @param {number} min_valid
+ * @returns {any}
+ */
+export function cube_stats(values, n_times, height, width, times, method, breaks_alpha, min_segment, min_valid) {
+    const ptr0 = passArrayF64ToWasm0(values, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(times, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passStringToWasm0(method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.cube_stats(ptr0, len0, n_times, height, width, ptr1, len1, ptr2, len2, breaks_alpha, min_segment, min_valid);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
  * Structural break detection (OLS-CUSUM + binary segmentation).
  * @param {Float64Array} t
  * @param {Float64Array} y
@@ -118,9 +166,17 @@ function __wbg_get_imports() {
             const ret = new Object();
             return ret;
         },
+        __wbg_new_from_slice_a41b655474eda3a9: function(arg0, arg1) {
+            const ret = new Float64Array(getArrayF64FromWasm0(arg0, arg1));
+            return ret;
+        },
         __wbg_set_6be42768c690e380: function(arg0, arg1, arg2) {
             arg0[arg1] = arg2;
         },
+        __wbg_set_a6ba3ac0e634b822: function() { return handleError(function (arg0, arg1, arg2) {
+            const ret = Reflect.set(arg0, arg1, arg2);
+            return ret;
+        }, arguments); },
         __wbg_set_da33c120a6584674: function(arg0, arg1, arg2) {
             arg0[arg1 >>> 0] = arg2;
         },
@@ -155,6 +211,17 @@ function __wbg_get_imports() {
     };
 }
 
+function addToExternrefTable0(obj) {
+    const idx = wasm.__externref_table_alloc();
+    wasm.__wbindgen_externrefs.set(idx, obj);
+    return idx;
+}
+
+function getArrayF64FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
+}
+
 let cachedDataViewMemory0 = null;
 function getDataViewMemory0() {
     if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
@@ -181,6 +248,15 @@ function getUint8ArrayMemory0() {
         cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
     }
     return cachedUint8ArrayMemory0;
+}
+
+function handleError(f, args) {
+    try {
+        return f.apply(this, args);
+    } catch (e) {
+        const idx = addToExternrefTable0(e);
+        wasm.__wbindgen_exn_store(idx);
+    }
 }
 
 function passArrayF64ToWasm0(arg, malloc) {

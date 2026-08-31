@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Visor de análisis de terreno — Territorio Digital</title>
 <meta name="description" content="Dibuja un área en cualquier parte de Chile y obtén relieve, pendiente y clasificación de geoformas al instante. El análisis corre en tu navegador con SurtGIS, motor geoespacial en Rust publicado en Environmental Modelling & Software.">
-<link rel="stylesheet" href="./leaflet.css?v=4">
-<script src="./leaflet.js?v=4"></script>
-<script src="./geotiff.js?v=4"></script>
-<script src="./proj4.js?v=4"></script>
+<link rel="stylesheet" href="./leaflet.css?v=5">
+<script src="./leaflet.js?v=5"></script>
+<script src="./geotiff.js?v=5"></script>
+<script src="./proj4.js?v=5"></script>
 <!--
 	OJO: nginx sirve los .js con Cache-Control immutable por un año, así que un
 	archivo con el mismo nombre nunca se vuelve a pedir. Al actualizar cualquier
@@ -197,6 +197,9 @@
 		<div class="fila" style="margin-bottom:.5rem">
 			<button class="b" id="btn-serie" style="min-width:100%">📈 Construir serie temporal (NDVI)</button>
 		</div>
+		<div class="fila" style="margin-bottom:.5rem">
+			<button class="b" id="btn-tendencia" style="min-width:100%" disabled>🗺 Mapa de tendencia y quiebres</button>
+		</div>
 		<div id="progreso"></div>
 		<input id="buscar-idx" placeholder="Buscar índice: ndvi, incendio, agua…" autocomplete="off">
 		<div class="fichas" id="fichas-idx"></div>
@@ -246,10 +249,10 @@ import init, {
 	slope, hillshade_compute, geomorphons_compute, curvature_compute,
 	fill_depressions, flow_direction_d8, flow_accumulation_d8, twi_compute, hand_compute,
 	spectral_index
-} from './wasm/surtgis_wasm.js?v=4';
-import { buscarEscenas, leerBandas, leerMascara, CLASES_INVALIDAS } from './sentinel.js?v=4';
-import initDatacube, { theil_sen, mann_kendall, detect_breaks } from './wasm-datacube/datacube_wasm.js?v=4';
-import { escribirGeoTIFF } from './geotiff-writer.js?v=4';
+} from './wasm/surtgis_wasm.js?v=5';
+import { buscarEscenas, leerBandas, leerMascara, CLASES_INVALIDAS } from './sentinel.js?v=5';
+import initDatacube, { theil_sen, mann_kendall, detect_breaks, cube_stats } from './wasm-datacube/datacube_wasm.js?v=5';
+import { escribirGeoTIFF } from './geotiff-writer.js?v=5';
 
 // ---------- Constantes del DEM Copernicus GLO-30 ----------
 const PX_POR_GRADO = 3600;       // cada tile cubre 1° x 1°
@@ -352,7 +355,10 @@ const PALETAS = {
 	drenaje: v => rampa(v, [[0, 245, 245, 235], [.45, 120, 190, 220], [.75, 30, 110, 190], [1, 8, 40, 110]]),
 	twi: v => rampa(v, [[0, 245, 240, 215], [.5, 110, 180, 150], [1, 15, 70, 110]]),
 	hand: v => rampa(v, [[0, 20, 80, 160], [.3, 130, 200, 220], [.6, 230, 225, 170], [1, 160, 120, 80]]),
-	indice: v => rampa(v, [[0, 165, 42, 42], [.35, 222, 184, 135], [.6, 173, 209, 128], [1, 20, 100, 40]])
+	indice: v => rampa(v, [[0, 165, 42, 42], [.35, 222, 184, 135], [.6, 173, 209, 128], [1, 20, 100, 40]]),
+	// Divergente pardo-blanco-verde: pardo = pérdida de vegetación, verde = ganancia.
+	tendencia: v => rampa(v, [[0, 140, 81, 10], [.25, 216, 179, 101], [.5, 245, 245, 245], [.75, 127, 191, 123], [1, 27, 120, 55]]),
+	quiebre: v => rampa(v, [[0, 68, 1, 84], [.33, 49, 104, 142], [.66, 53, 183, 121], [1, 253, 231, 37]])
 };
 const GEOFORMAS = {
 	1: ['Plano', [211, 211, 211]], 2: ['Cima', [165, 0, 38]], 3: ['Cresta', [244, 109, 67]],
@@ -507,19 +513,22 @@ function crearCapa(clave, cfg, raster, bytes, ms, dim) {
 		val.sort((a, b) => a - b);
 		let mn = val[Math.floor(val.length * .02)], mx = val[Math.floor(val.length * .98)];
 		if (!(mx > mn)) { mn = val[0]; mx = val[val.length - 1]; }
+		// Tendencias: escala simétrica en torno a cero, para que el blanco sea «sin cambio».
+		if (cfg.sym) { const m = Math.max(Math.abs(mn), Math.abs(mx)) || 1; mn = -m; mx = m; }
 		const pal = PALETAS[cfg.pal];
 		for (let i = 0; i < raster.length; i++) {
 			const v = raster[i];
 			if (!Number.isFinite(v)) { img.data[i * 4 + 3] = 0; continue; }
 			const t = Math.max(0, Math.min(1, (transf(v) - mn) / (mx - mn || 1)));
 			const [r, g, b] = pal(t);
-			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b; img.data[i * 4 + 3] = 255;
+			img.data[i * 4] = r; img.data[i * 4 + 1] = g; img.data[i * 4 + 2] = b;
+			img.data[i * 4 + 3] = cfg.alfa ? cfg.alfa[i] : 255;
 		}
 		const grad = Array.from({ length: 11 }, (_, i) => {
 			const [r, g, b] = pal(i / 10); return `rgb(${r | 0},${g | 0},${b | 0})`;
 		}).join(',');
 		leyenda = `<div style="width:100%"><div class="barra" style="background:linear-gradient(90deg,${grad})"></div>
-			<div class="rango"><span>${(cfg.log ? Math.pow(10, mn) : mn).toFixed(cfg.log ? 0 : 1)}${cfg.unidad}</span><span>${(cfg.log ? Math.pow(10, mx) : mx).toFixed(cfg.log ? 0 : 1)}${cfg.unidad}</span></div></div>`;
+			<div class="rango"><span>${(cfg.log ? Math.pow(10, mn) : mn).toFixed(cfg.dec ?? (cfg.log ? 0 : 1))}${cfg.unidad}</span><span>${(cfg.log ? Math.pow(10, mx) : mx).toFixed(cfg.dec ?? (cfg.log ? 0 : 1))}${cfg.unidad}</span></div></div>`;
 	}
 	ctx.putImageData(img, 0, 0);
 
@@ -641,6 +650,7 @@ function limpiar(todo = true) {
 		$('bloque-analisis').style.display = 'none';
 		$('bloque-sat').style.display = 'none';
 		escenaActual = null; $('escena').className = '';
+		$('btn-tendencia').disabled = true;
 		$('bloque-ayuda').style.display = 'block';
 		estado.textContent = 'Selecciona un área para empezar.';
 	}
@@ -681,7 +691,7 @@ const FRECUENTES = ['NDVI', 'EVI', 'SAVI', 'MSAVI', 'GNDVI', 'NDWI', 'MNDWI', 'N
 
 let dominioActivo = 'frecuentes';
 
-fetch('./indices.json?v=4').then(r => r.json()).then(c => {
+fetch('./indices.json?v=5').then(r => r.json()).then(c => {
 	CATALOGO = c;
 	dibujarFichas();
 	listarIndices();
@@ -796,9 +806,9 @@ async function calcularIndice(shortName) {
 
 
 // ---------- Series temporales (datacube-rs) ----------
-// El motor expone estadísticos por serie, no por cubo: se calculan sobre el
-// píxel que el usuario elige, no sobre toda el área. Un mapa de tendencia
-// requeriría una función a nivel de cubo en datacube-rs.
+// Estadísticos por serie para el punto que el usuario elige y, desde
+// datacube-rs 0.16, por cubo completo (cube_stats): un solo cruce JS↔WASM
+// devuelve las grillas de pendiente, p-valor y quiebres de toda el área.
 let cubo = null;   // { fechas[], capas[Float32Array], ancho, alto, indice }
 
 $('btn-serie').onclick = async () => {
@@ -861,10 +871,73 @@ $('btn-serie').onclick = async () => {
 
 		if (capas.length < 5) { prog.textContent = 'No se reunieron suficientes fechas válidas.'; return; }
 		cubo = { fechas, capas, ancho, alto, indice: 'NDVI' };
+		$('btn-tendencia').disabled = false;
 		prog.innerHTML = `<b style="color:var(--verde)">Serie lista: ${capas.length} fechas entre ${fechas[0]} y ${fechas[fechas.length - 1]}</b><br>Haz clic dentro del área para ver la evolución de ese punto.`;
 		mostrarAviso('Serie construida. Haz clic dentro del área para inspeccionar un punto.');
 	} catch (e) {
 		prog.innerHTML = `<span style="color:var(--rojo)">${e.message || e}</span>`;
+	}
+};
+
+// ---------- Mapa de tendencia y quiebres (cube_stats) ----------
+// Una sola llamada JS↔WASM analiza la serie de cada píxel del cubo. El
+// contrato de cube_stats pide el cubo aplanado time-major (concatenación de
+// las grillas por fecha), que es exactamente como ya está en cubo.capas.
+$('btn-tendencia').onclick = async () => {
+	if (!cubo) return;
+	estado.textContent = 'Analizando la serie de cada píxel…';
+	await new Promise(r => setTimeout(r, 20));
+	try {
+		const { ancho, alto, fechas } = cubo;
+		const wh = ancho * alto, nT = cubo.capas.length;
+		const values = new Float64Array(nT * wh);
+		for (let t = 0; t < nT; t++) values.set(cubo.capas[t], t * wh);
+		const base = new Date(fechas[0]).getTime();
+		const times = new Float64Array(fechas.map(f => (new Date(f).getTime() - base) / 864e5 / 365.25));
+
+		const t0 = performance.now();
+		// α=0.05 para los quiebres, mínimo 3 observaciones por segmento, y un
+		// píxel necesita al menos 5 observaciones sin nube para participar.
+		const r = cube_stats(values, nT, alto, ancho, times, 'theil_sen', 0.05, 3, 5);
+		const ms = performance.now() - t0;
+
+		// Si se reconstruye la serie, las capas anteriores quedan obsoletas.
+		for (const k of ['tend_ndvi', 'quiebre_ndvi']) {
+			if (capas.has(k)) { map.removeLayer(capas.get(k).overlay); capas.delete(k); }
+		}
+
+		// La tendencia se lee sobre la imagen satelital: mezclada con una capa de
+		// terreno encendida serían dos variables pintadas una sobre otra. Se
+		// apagan (siguen en el panel, reactivables con el ojo).
+		capas.forEach(c => { if (c.visible) { c.visible = false; c.overlay.setOpacity(0); } });
+
+		// La pendiente Theil-Sen se pinta completa; donde Mann-Kendall no la
+		// declara significativa va atenuada, no invisible: con series cortas la
+		// significancia es un listón alto y una capa casi vacía parece un fallo.
+		let nSig = 0;
+		const alfa = new Uint8Array(wh);
+		for (let i = 0; i < wh; i++) {
+			if (r.p_value[i] <= 0.05) { alfa[i] = 255; nSig++; } else alfa[i] = 110;
+		}
+		crearCapa('tend_ndvi', {
+			nombre: `Tendencia NDVI ${fechas[0].slice(0, 4)}–${fechas[nT - 1].slice(0, 4)}`,
+			pal: 'tendencia', unidad: '/año', sym: true, dec: 3, alfa
+		}, Float64Array.from(r.slope), null, ms, { ancho, alto });
+
+		let nQ = 0;
+		if (r.first_break) {
+			// first_break viene en años desde la primera fecha; se traduce a año
+			// calendario para que la leyenda diga «cuándo», no «cuánto después».
+			const anioBase = 1970 + base / 864e5 / 365.25;
+			const quiebres = Float64Array.from(r.first_break, v => Number.isFinite(v) ? anioBase + v : NaN);
+			for (const v of quiebres) if (Number.isFinite(v)) nQ++;
+			if (nQ) {
+				crearCapa('quiebre_ndvi', { nombre: 'Año de quiebre NDVI', pal: 'quiebre', unidad: '', dec: 1 }, quiebres, null, 0, { ancho, alto });
+			}
+		}
+		estado.innerHTML = `<b style="color:var(--verde)">Tendencia por píxel</b> — ${wh.toLocaleString('es-CL')} series en <b style="color:var(--azul)">${ms.toFixed(0)} ms</b> en tu navegador · ${nSig.toLocaleString('es-CL')} con tendencia significativa` + (nQ ? ` · ${nQ.toLocaleString('es-CL')} con quiebre` : ' · sin quiebres');
+	} catch (e) {
+		estado.innerHTML = `<span style="color:var(--rojo)">${e.message || e}</span>`;
 	}
 };
 
