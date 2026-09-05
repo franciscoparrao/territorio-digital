@@ -107,8 +107,8 @@
 
 	<div class="seccion">
 		<div class="proyecto">
-			Corredor Membrillar — Región del Biobío
-			<small>Franja de servidumbre 3,1 km · Ortomosaico real UAV (OpenAerialMap, GSD 39 cm)</small>
+			Corredor Maipú — Región Metropolitana
+			<small>Eje 2,3 km · Ortomosaico aéreo real Geomag (sep 2026, GSD 4 cm)</small>
 		</div>
 	</div>
 
@@ -118,7 +118,7 @@
 			<div class="kpi critico"><div class="valor" id="kpi-criticos">—</div><div class="nombre">Hallazgos críticos</div></div>
 			<div class="kpi"><div class="valor" id="kpi-total">—</div><div class="nombre">Hallazgos totales</div></div>
 			<div class="kpi ok"><div class="valor" id="kpi-validados">—</div><div class="nombre">Validados</div></div>
-			<div class="kpi"><div class="valor">3,1 km</div><div class="nombre">Franja patrullada</div></div>
+			<div class="kpi"><div class="valor">2,3 km</div><div class="nombre">Franja patrullada</div></div>
 		</div>
 	</div>
 
@@ -126,20 +126,20 @@
 		<h2>Historial de inspecciones</h2>
 		<div class="inspeccion activa">
 			<div>
-				<div class="fecha">15 oct 2019 — Inspección #12</div>
-				<div class="detalle">UAV ala fija · 214 imágenes · procesada ✓</div>
+				<div class="fecha">04 sep 2026 — Inspección #01</div>
+				<div class="detalle">Levantamiento Geomag · ortomosaico 31.666 × 41.817 px · procesado ✓</div>
 			</div>
 		</div>
 		<div class="inspeccion pasada">
 			<div>
-				<div class="fecha">02 sep 2019 — Inspección #11</div>
-				<div class="detalle">historial simulado en esta demo</div>
+				<div class="fecha">Pasada térmica nocturna</div>
+				<div class="detalle">insumo comprometido por Geomag · pendiente de recepción</div>
 			</div>
 		</div>
 		<div class="inspeccion pasada">
 			<div>
-				<div class="fecha">18 jul 2019 — Inspección #10</div>
-				<div class="detalle">historial simulado en esta demo</div>
+				<div class="fecha">Nube de puntos LIDAR</div>
+				<div class="detalle">insumo comprometido por Geomag · pendiente de recepción</div>
 			</div>
 		</div>
 	</div>
@@ -164,7 +164,7 @@
 		</div>
 		<div id="surtgis-status" style="font-size:0.68rem; color:var(--gris-panel); margin-top:0.5rem">Cargando motor WASM…</div>
 		<div id="surtgis-legend" style="display:none; flex-wrap:wrap; gap:0.3rem; margin-top:0.5rem"></div>
-		<div id="surtgis-zona-info" style="font-size:0.62rem; color:var(--gris-panel); margin-top:0.35rem">DEM Copernicus 30 m del corredor (505×433 px). Cómputo 100% en su navegador — motor propio publicado en <i>Environmental Modelling &amp; Software</i> (Elsevier, 2026).</div>
+		<div id="surtgis-zona-info" style="font-size:0.62rem; color:var(--gris-panel); margin-top:0.35rem">DEM Copernicus 30 m del corredor de Maipú (284×337 px). Cómputo 100% en su navegador — motor propio publicado en <i>Environmental Modelling &amp; Software</i> (Elsevier, 2026).</div>
 	</div>
 	<style>
 		.accion.zona.activa-zona { border-color: var(--azul); color: var(--azul); font-weight: 700; }
@@ -178,7 +178,7 @@
 	</div>
 
 	<div class="pie">
-		DEMO TÉCNICA · Ortomosaico UAV real de Membrillar, Biobío (OpenAerialMap, oct 2019, licencia CC-BY). El trazado del ducto y los hallazgos son simulados con fines de demostración. Territorio Digital © 2026.
+		DEMO TÉCNICA · Ortomosaico aéreo real del corredor de Maipú, levantado por Geomag (septiembre 2026, GSD 4 cm). El eje se derivó automáticamente de la franja levantada; los hallazgos son simulados con fines de demostración. Material confidencial. Territorio Digital © 2026.
 	</div>
 </aside>
 
@@ -192,29 +192,32 @@
 	</div>
 	<div id="divisor"></div>
 	<div class="etiqueta-capa" id="et-izq" style="display:none">◀ Línea base satelital</div>
-	<div class="etiqueta-capa" id="et-der" style="display:none">Inspección UAV 15-oct-2019 ▶</div>
+	<div class="etiqueta-capa" id="et-der" style="display:none">Inspección Geomag 04-sep-2026 ▶</div>
 </div>
 
 <script>
 // ================= Datos =================
-const BBOX = [[-37.0689, -72.4537], [-37.0520, -72.4333]];
-const OAM_URL = 'https://tiles.openaerialmap.org/5da7945be845550007306c7b/0/5da7945be845550007306c7c/{z}/{x}/{y}';
+const BBOX = [[-33.541226, -70.761942], [-33.526212, -70.748367]];
+const OAM_URL = './maipu/{z}/{x}/{y}.webp';
 
-// Trazado simulado del ducto cruzando el ortomosaico
+// Eje del ducto derivado automáticamente de la franja levantada (línea central de la máscara del ortomosaico)
 const ducto = [
-	[-37.0688, -72.4532], [-37.0664, -72.4507], [-37.0645, -72.4478],
-	[-37.0625, -72.4452], [-37.0603, -72.4425], [-37.0580, -72.4398],
-	[-37.0558, -72.4372], [-37.0537, -72.4348], [-37.0523, -72.4336]
+	[-33.540856, -70.760043], [-33.540411, -70.760948], [-33.540157, -70.761104],
+	[-33.539797, -70.760943], [-33.538483, -70.7592], [-33.538193, -70.759068],
+	[-33.537893, -70.759181], [-33.5374, -70.759771], [-33.537094, -70.75989],
+	[-33.536827, -70.759759], [-33.53265, -70.753486], [-33.529233, -70.749188],
+	[-33.528978, -70.749079], [-33.528638, -70.749169], [-33.526884, -70.750425],
+	[-33.526769, -70.750695], [-33.526856, -70.751143], [-33.527027, -70.751453]
 ];
 
 // Hallazgos simulados del "modelo de detección"
 const hallazgos = [
-	{ id: 'H-201', clase: 'Construcción no autorizada', sev: 'alta', conf: 0.94, lat: -37.0645, lon: -72.4473, estado: 'pendiente', dist: '8 m del eje' },
-	{ id: 'H-202', clase: 'Maquinaria en franja de servidumbre', sev: 'alta', conf: 0.91, lat: -37.0603, lon: -72.4430, estado: 'pendiente', dist: '4 m del eje' },
-	{ id: 'H-203', clase: 'Cruce vehicular no autorizado', sev: 'media', conf: 0.87, lat: -37.0580, lon: -72.4393, estado: 'validado', dist: 'sobre el eje' },
-	{ id: 'H-204', clase: 'Erosión / socavón', sev: 'media', conf: 0.82, lat: -37.0664, lon: -72.4512, estado: 'pendiente', dist: '12 m del eje' },
-	{ id: 'H-205', clase: 'Vegetación mayor sobre el trazado', sev: 'baja', conf: 0.78, lat: -37.0537, lon: -72.4352, estado: 'validado', dist: 'sobre el eje' },
-	{ id: 'H-206', clase: 'Acopio de material no identificado', sev: 'baja', conf: 0.74, lat: -37.0625, lon: -72.4447, estado: 'pendiente', dist: '15 m del eje' }
+	{ id: 'H-201', clase: 'Construcción no autorizada', sev: 'alta', conf: 0.94, lat: -33.539112, lon: -70.76017, estado: 'pendiente', dist: '8 m del eje' },
+	{ id: 'H-202', clase: 'Maquinaria en franja de servidumbre', sev: 'alta', conf: 0.91, lat: -33.53637, lon: -70.759011, estado: 'pendiente', dist: '4 m del eje' },
+	{ id: 'H-203', clase: 'Cruce vehicular no autorizado', sev: 'media', conf: 0.87, lat: -33.534406, lon: -70.756131, estado: 'validado', dist: 'sobre el eje' },
+	{ id: 'H-204', clase: 'Erosión / socavón', sev: 'media', conf: 0.82, lat: -33.532814, lon: -70.753531, estado: 'pendiente', dist: '12 m del eje' },
+	{ id: 'H-205', clase: 'Vegetación mayor sobre el trazado', sev: 'baja', conf: 0.78, lat: -33.530739, lon: -70.751089, estado: 'validado', dist: 'sobre el eje' },
+	{ id: 'H-206', clase: 'Acopio de material no identificado', sev: 'baja', conf: 0.74, lat: -33.528131, lon: -70.749345, estado: 'pendiente', dist: '15 m del eje' }
 ];
 const colorSev = { alta: '#ef4444', media: '#f59e0b', baja: '#22c55e' };
 
@@ -222,11 +225,13 @@ const colorSev = { alta: '#ef4444', media: '#f59e0b', baja: '#22c55e' };
 const map = L.map('map', { zoomControl: true }).fitBounds(BBOX);
 
 const capaBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-	attribution: 'Esri World Imagery', maxZoom: 19
+	attribution: 'Esri World Imagery', maxZoom: 22, maxNativeZoom: 19
 }).addTo(map);
 
 const capaOrto = L.tileLayer(OAM_URL, {
-	attribution: 'OpenAerialMap CC-BY', maxZoom: 20, maxNativeZoom: 18
+	attribution: 'Ortomosaico © Geomag 2026', maxZoom: 22, maxNativeZoom: 20,
+	bounds: L.latLngBounds(BBOX).pad(0.02),
+	errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
 }).addTo(map);
 
 L.control.scale({ metric: true, imperial: false }).addTo(map);
@@ -234,10 +239,10 @@ L.control.scale({ metric: true, imperial: false }).addTo(map);
 // Franja de servidumbre (buffer visual) + eje del ducto
 L.polyline(ducto, { color: '#ef4444', weight: 14, opacity: 0.12 }).addTo(map);
 L.polyline(ducto, { color: '#ef4444', weight: 3, opacity: 0.9, dashArray: null }).addTo(map)
-	.bindTooltip('Eje del ducto (simulado)', { sticky: true });
+	.bindTooltip('Eje del ducto (derivado de la franja)', { sticky: true });
 
 // Ruta de vuelo del patrullaje
-const ruta = ducto.map(([la, lo]) => [la + 0.0006, lo - 0.0004]);
+const ruta = ducto.map(([la, lo]) => [la + 0.0003, lo - 0.0002]);
 L.polyline(ruta, { color: '#0ea5e9', weight: 1.5, opacity: 0.8, dashArray: '6 6' }).addTo(map)
 	.bindTooltip('Ruta de vuelo UAV', { sticky: true });
 
@@ -264,7 +269,7 @@ hallazgos.forEach(h => {
 			<div class="fila"><span>ID</span><b>${h.id}</b></div>
 			<div class="fila"><span>Confianza del modelo</span><b class="conf">${(h.conf * 100).toFixed(0)}%</b></div>
 			<div class="fila"><span>Distancia al eje</span><b>${h.dist}</b></div>
-			<div class="fila"><span>Inspección</span><b>#12 · 15-oct-2019</b></div>
+			<div class="fila"><span>Inspección</span><b>#01 · 04-sep-2026</b></div>
 			<div class="fila"><span>Estado</span><b>${h.estado}</b></div>
 			<div class="acciones">
 				<button class="b-validar">✓ Validar</button>
@@ -356,16 +361,16 @@ function exportarGeoJSON() {
 		features: hallazgos.map(h => ({
 			type: 'Feature',
 			geometry: { type: 'Point', coordinates: [h.lon, h.lat] },
-			properties: { id: h.id, clase: h.clase, severidad: h.sev, confianza: h.conf, estado: h.estado, distancia_eje: h.dist, inspeccion: '#12 2019-10-15' }
+			properties: { id: h.id, clase: h.clase, severidad: h.sev, confianza: h.conf, estado: h.estado, distancia_eje: h.dist, inspeccion: '#01 2026-09-04' }
 		}))
 	};
-	descargarArchivo('hallazgos_inspeccion_12.geojson', JSON.stringify(gj, null, 2), 'application/geo+json');
+	descargarArchivo('hallazgos_inspeccion_01.geojson', JSON.stringify(gj, null, 2), 'application/geo+json');
 }
 
 function exportarCSV() {
 	const filas = [['id', 'clase', 'severidad', 'confianza', 'estado', 'distancia_eje', 'lat', 'lon', 'inspeccion']];
-	hallazgos.forEach(h => filas.push([h.id, h.clase, h.sev, h.conf, h.estado, h.dist, h.lat, h.lon, '#12 2019-10-15']));
-	descargarArchivo('hallazgos_inspeccion_12.csv', filas.map(f => f.join(';')).join('\n'), 'text/csv');
+	hallazgos.forEach(h => filas.push([h.id, h.clase, h.sev, h.conf, h.estado, h.dist, h.lat, h.lon, '#01 2026-09-04']));
+	descargarArchivo('hallazgos_inspeccion_01.csv', filas.map(f => f.join(';')).join('\n'), 'text/csv');
 }
 
 window.mapRef = map;
@@ -381,9 +386,9 @@ import init, { slope, hillshade_compute, geomorphons_compute, sky_view_factor }
 // bounds = envolvente WGS84 del raster UTM (esquinas vía gdalinfo).
 const ZONAS = {
 	corredor: {
-		url: './dem_corredor_utm.tif',
-		bounds: [[-37.123143, -72.52405], [-36.996846, -72.375646]],
-		info: 'DEM Copernicus 30 m del corredor, UTM 18S (428×456 px, 81–170 m). Cómputo 100% en su navegador — motor propio publicado en <i>Environmental Modelling &amp; Software</i> (Elsevier, 2026).',
+		url: './dem_maipu_utm.tif',
+		bounds: [[-33.581171, -70.801864], [-33.488725, -70.708302]],
+		info: 'DEM Copernicus 30 m del corredor de Maipú, UTM 19S (284×337 px, 442–780 m). Cómputo 100% en su navegador — motor propio publicado en <i>Environmental Modelling &amp; Software</i> (Elsevier, 2026).',
 		bytes: null
 	},
 	cordillera: {
